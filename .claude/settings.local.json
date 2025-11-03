@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /s \"c:\\github\\SBIR\\Database\")",
+      "Bash(find:*)",
+      "Bash(python -m venv:*)",
+      "Bash(PGPASSWORD=willlin07 \"/c/Program Files/PostgreSQL/16/bin/psql.exe\":*)",
+      "Bash(export PGPASSFILE=\"C:/Users/Public/pgpass.conf\":*)",
+      "Bash(\"/c/Program Files/PostgreSQL/16/bin/psql.exe\" -U postgres -h localhost -p 5432 -f \"c:/github/SBIR/Database/create_database.sql\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
