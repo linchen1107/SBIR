@@ -1,0 +1,11 @@
+level 1 = 問題與答案，文字與字數都正好相同
+level 2 = 問題的字詞是答案字詞的字集合，(子文字正好相同，但答案字數較多)
+level 3 = 問題的字詞，都沒有出現在答案字詞的集合當中 (同義字)
+level 4 = 問題不直接(例如是商標名，而不是品名)，必須至公司網頁查詢
+level 5 = 問題與答案的邏輯難以想像 (例如問題超長，但沒有重點)(可能需要看圖認物)
+
+examples:
+
+LAMPS BULB 24v 40w SES -> instrument lamp。40w 的燈泡，誰能想到是儀表用的燈。
+COIL -> COMPASS COMPENSATION EQUIPMENT，這個打死我也不會想到，線圈 會變成羅盤補償設備。
+JUNCTION BOX -> NAVIGATION SET CONTROL UNIT，應該算是 level 3了
