@@ -1,0 +1,2 @@
+Database/migrations/scripts/遷移/*.sql filter=lfs diff=lfs merge=lfs -text
+Database/export/*.sql filter=lfs diff=lfs merge=lfs -text
