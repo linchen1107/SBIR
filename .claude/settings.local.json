@@ -6,7 +6,8 @@
       "Bash(python -m venv:*)",
       "Bash(PGPASSWORD=willlin07 \"/c/Program Files/PostgreSQL/16/bin/psql.exe\":*)",
       "Bash(export PGPASSFILE=\"C:/Users/Public/pgpass.conf\":*)",
-      "Bash(\"/c/Program Files/PostgreSQL/16/bin/psql.exe\" -U postgres -h localhost -p 5432 -f \"c:/github/SBIR/Database/create_database.sql\")"
+      "Bash(\"/c/Program Files/PostgreSQL/16/bin/psql.exe\" -U postgres -h localhost -p 5432 -f \"c:/github/SBIR/Database/create_database.sql\")",
+      "Bash(PGPASSWORD=willlin07 \"/c/Program Files/PostgreSQL/16/bin/psql.exe\" -U postgres -h localhost -p 5432 -d sbir_equipment_db -c \"SELECT supplier_id, cage_code FROM Supplier;\")"
     ],
     "deny": [],
     "ask": []
