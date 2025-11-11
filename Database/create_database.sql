@@ -2,7 +2,8 @@
 -- PostgreSQL 資料庫建立腳本
 -- 資料庫名稱: sbir_equipment_db
 -- 用途: 海軍裝備管理系統
--- 建立日期: 2025-11-04
+-- 建立日期: 2025-11-11
+-- 版本: V2.0 (重構版 - 以Equipment為中心)
 -- ============================================
 
 -- 建立資料庫
@@ -18,7 +19,7 @@ CREATE DATABASE sbir_equipment_db
 \c sbir_equipment_db;
 
 -- ============================================
--- 第一階段：基礎主檔建立
+-- 第一階段：三大主表建立
 -- ============================================
 
 -- 1. 廠商主檔 (Supplier)
@@ -43,7 +44,7 @@ COMMENT ON COLUMN Supplier.supplier_name_zh IS '廠商中文名稱';
 COMMENT ON COLUMN Supplier.supplier_type IS '廠商類型（製造商/代理商）';
 COMMENT ON COLUMN Supplier.country_code IS '國家代碼';
 
--- 2. 裝備主檔 (Equipment)
+-- 2. 裝備主檔 (Equipment) ⭐ 核心表
 CREATE TABLE Equipment (
     equipment_id VARCHAR(50) PRIMARY KEY,
     equipment_name_zh VARCHAR(100),
@@ -64,7 +65,7 @@ CREATE TABLE Equipment (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-COMMENT ON TABLE Equipment IS '裝備主檔';
+COMMENT ON TABLE Equipment IS '裝備主檔（核心表）';
 COMMENT ON COLUMN Equipment.equipment_id IS '單機識別碼（CID）';
 COMMENT ON COLUMN Equipment.equipment_name_zh IS '裝備中文名稱';
 COMMENT ON COLUMN Equipment.equipment_name_en IS '裝備英文名稱';
@@ -81,7 +82,7 @@ COMMENT ON COLUMN Equipment.total_installation_qty IS '全艦裝置數';
 COMMENT ON COLUMN Equipment.maintenance_level IS '裝備維修等級代碼';
 COMMENT ON COLUMN Equipment.equipment_serial IS '裝備識別編號';
 
--- 3. 品項主檔 (Item)
+-- 3. 品項主檔 (Item) ⭐ 核心表（合併ItemAttribute）
 CREATE TABLE Item (
     item_id VARCHAR(20) PRIMARY KEY,
     item_id_last5 VARCHAR(5),
@@ -99,11 +100,25 @@ CREATE TABLE Item (
     package_qty INT,
     weight_kg DECIMAL(10,3),
     has_stock BOOLEAN DEFAULT FALSE,
+    -- 以下欄位來自原 ItemAttribute 表
+    storage_life_code VARCHAR(10),
+    file_type_code VARCHAR(10),
+    file_type_category VARCHAR(10),
+    security_code VARCHAR(10),
+    consumable_code VARCHAR(10),
+    spec_indicator VARCHAR(10),
+    navy_source VARCHAR(50),
+    storage_type VARCHAR(20),
+    life_process_code VARCHAR(10),
+    manufacturing_capacity VARCHAR(10),
+    repair_capacity VARCHAR(10),
+    source_code VARCHAR(10),
+    project_code VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-COMMENT ON TABLE Item IS '品項主檔';
+COMMENT ON TABLE Item IS '品項主檔（合併ItemAttribute）';
 COMMENT ON COLUMN Item.item_id IS '品項識別碼';
 COMMENT ON COLUMN Item.item_id_last5 IS '品項識別碼（後五碼）';
 COMMENT ON COLUMN Item.nsn IS 'NSN/國家料號';
@@ -120,50 +135,27 @@ COMMENT ON COLUMN Item.unit_price_usd IS '美金單價';
 COMMENT ON COLUMN Item.package_qty IS '單位包裝量';
 COMMENT ON COLUMN Item.weight_kg IS '重量（KG）';
 COMMENT ON COLUMN Item.has_stock IS '有無料號';
-
--- 4. 品項屬性檔 (ItemAttribute)
-CREATE TABLE ItemAttribute (
-    item_id VARCHAR(20) PRIMARY KEY,
-    storage_life_code VARCHAR(10),
-    file_type_code VARCHAR(10),
-    file_type_category VARCHAR(10),
-    security_code VARCHAR(10),
-    consumable_code VARCHAR(10),
-    spec_indicator VARCHAR(10),
-    navy_source VARCHAR(50),
-    storage_type VARCHAR(20),
-    life_process_code VARCHAR(10),
-    manufacturing_capacity VARCHAR(10),
-    repair_capacity VARCHAR(10),
-    source_code VARCHAR(10),
-    project_code VARCHAR(20),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (item_id) REFERENCES Item(item_id) ON DELETE CASCADE
-);
-
-COMMENT ON TABLE ItemAttribute IS '品項屬性檔';
-COMMENT ON COLUMN ItemAttribute.item_id IS '品項識別碼';
-COMMENT ON COLUMN ItemAttribute.storage_life_code IS '存儲壽限代號';
-COMMENT ON COLUMN ItemAttribute.file_type_code IS '檔別代號';
-COMMENT ON COLUMN ItemAttribute.file_type_category IS '檔別區分';
-COMMENT ON COLUMN ItemAttribute.security_code IS '機密性代號';
-COMMENT ON COLUMN ItemAttribute.consumable_code IS '消耗性代號';
-COMMENT ON COLUMN ItemAttribute.spec_indicator IS '規格指示';
-COMMENT ON COLUMN ItemAttribute.navy_source IS '海軍軍品來源';
-COMMENT ON COLUMN ItemAttribute.storage_type IS '儲存型式';
-COMMENT ON COLUMN ItemAttribute.life_process_code IS '壽限處理代號';
-COMMENT ON COLUMN ItemAttribute.manufacturing_capacity IS '製造能量';
-COMMENT ON COLUMN ItemAttribute.repair_capacity IS '修理能量';
-COMMENT ON COLUMN ItemAttribute.source_code IS '來源代號';
-COMMENT ON COLUMN ItemAttribute.project_code IS '專案代號';
+-- 原 ItemAttribute 欄位註解
+COMMENT ON COLUMN Item.storage_life_code IS '存儲壽限代號';
+COMMENT ON COLUMN Item.file_type_code IS '檔別代號';
+COMMENT ON COLUMN Item.file_type_category IS '檔別區分';
+COMMENT ON COLUMN Item.security_code IS '機密性代號';
+COMMENT ON COLUMN Item.consumable_code IS '消耗性代號';
+COMMENT ON COLUMN Item.spec_indicator IS '規格指示';
+COMMENT ON COLUMN Item.navy_source IS '海軍軍品來源';
+COMMENT ON COLUMN Item.storage_type IS '儲存型式';
+COMMENT ON COLUMN Item.life_process_code IS '壽限處理代號';
+COMMENT ON COLUMN Item.manufacturing_capacity IS '製造能量';
+COMMENT ON COLUMN Item.repair_capacity IS '修理能量';
+COMMENT ON COLUMN Item.source_code IS '來源代號';
+COMMENT ON COLUMN Item.project_code IS '專案代號';
 
 -- ============================================
--- 第二階段：關聯資料建立
+-- 第二階段：關聯表建立
 -- ============================================
 
--- 5. 零件號碼檔 (PartNumber)
-CREATE TABLE PartNumber (
+-- 4. 零件號碼關聯檔 (Part_Number_xref)
+CREATE TABLE Part_Number_xref (
     part_number_id SERIAL PRIMARY KEY,
     part_number VARCHAR(50),
     item_id VARCHAR(20),
@@ -178,42 +170,22 @@ CREATE TABLE PartNumber (
     CONSTRAINT unique_part UNIQUE (part_number, item_id, supplier_id)
 );
 
-COMMENT ON TABLE PartNumber IS '零件號碼檔';
-COMMENT ON COLUMN PartNumber.part_number_id IS '零件號碼ID（自動編號）';
-COMMENT ON COLUMN PartNumber.part_number IS '配件號碼（P/N）';
-COMMENT ON COLUMN PartNumber.item_id IS '品項識別碼';
-COMMENT ON COLUMN PartNumber.supplier_id IS '廠商ID';
-COMMENT ON COLUMN PartNumber.obtain_level IS 'P/N獲得程度/參考號獲得程度';
-COMMENT ON COLUMN PartNumber.obtain_source IS 'P/N獲得來源/參考號獲得來源';
-COMMENT ON COLUMN PartNumber.is_primary IS '是否為主要零件號';
+COMMENT ON TABLE Part_Number_xref IS '零件號碼關聯檔（品項-供應商多對多）';
+COMMENT ON COLUMN Part_Number_xref.part_number_id IS '零件號碼ID（自動編號）';
+COMMENT ON COLUMN Part_Number_xref.part_number IS '配件號碼（P/N）';
+COMMENT ON COLUMN Part_Number_xref.item_id IS '品項識別碼';
+COMMENT ON COLUMN Part_Number_xref.supplier_id IS '廠商ID';
+COMMENT ON COLUMN Part_Number_xref.obtain_level IS 'P/N獲得程度/參考號獲得程度';
+COMMENT ON COLUMN Part_Number_xref.obtain_source IS 'P/N獲得來源/參考號獲得來源';
+COMMENT ON COLUMN Part_Number_xref.is_primary IS '是否為主要零件號';
 
--- 6. 裝備品項關聯檔 (EquipmentItem)
-CREATE TABLE EquipmentItem (
+-- 5. 裝備品項關聯檔 (Equipment_Item_xref) ⭐ 合併BOM可靠度資料
+CREATE TABLE Equipment_Item_xref (
     equipment_id VARCHAR(50),
     item_id VARCHAR(20),
     installation_qty INT,
     installation_unit VARCHAR(10),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (equipment_id, item_id),
-    FOREIGN KEY (equipment_id) REFERENCES Equipment(equipment_id) ON DELETE CASCADE,
-    FOREIGN KEY (item_id) REFERENCES Item(item_id) ON DELETE CASCADE
-);
-
-COMMENT ON TABLE EquipmentItem IS '裝備品項關聯檔';
-COMMENT ON COLUMN EquipmentItem.equipment_id IS '單機識別碼';
-COMMENT ON COLUMN EquipmentItem.item_id IS '品項識別碼';
-COMMENT ON COLUMN EquipmentItem.installation_qty IS '單機零附件裝置數';
-COMMENT ON COLUMN EquipmentItem.installation_unit IS '單機零附件裝置單位';
-
--- 7. BOM結構檔 (BOM)
-CREATE TABLE BOM (
-    bom_id SERIAL PRIMARY KEY,
-    parent_equipment_id VARCHAR(50),
-    child_item_id VARCHAR(20),
-    item_no_plsin VARCHAR(20),
-    quantity INT,
-    unit VARCHAR(10),
+    -- 以下欄位來自原 BOM 表
     delivery_time INT,
     failure_rate_per_million DECIMAL(10,4),
     mtbf_hours INT,
@@ -221,30 +193,29 @@ CREATE TABLE BOM (
     is_repairable CHAR(1),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (parent_equipment_id) REFERENCES Equipment(equipment_id) ON DELETE CASCADE,
-    FOREIGN KEY (child_item_id) REFERENCES Item(item_id) ON DELETE CASCADE,
-    CONSTRAINT chk_qty CHECK (quantity > 0),
-    CONSTRAINT chk_repairable CHECK (is_repairable IN ('Y','N'))
+    PRIMARY KEY (equipment_id, item_id),
+    FOREIGN KEY (equipment_id) REFERENCES Equipment(equipment_id) ON DELETE CASCADE,
+    FOREIGN KEY (item_id) REFERENCES Item(item_id) ON DELETE CASCADE,
+    CONSTRAINT chk_is_repairable CHECK (is_repairable IN ('Y','N') OR is_repairable IS NULL)
 );
 
-COMMENT ON TABLE BOM IS 'BOM結構檔';
-COMMENT ON COLUMN BOM.bom_id IS 'BOM ID（自動編號）';
-COMMENT ON COLUMN BOM.parent_equipment_id IS '父裝備單機識別碼';
-COMMENT ON COLUMN BOM.child_item_id IS '子品項識別碼';
-COMMENT ON COLUMN BOM.item_no_plsin IS 'ITEM NO PLSIN';
-COMMENT ON COLUMN BOM.quantity IS '數量';
-COMMENT ON COLUMN BOM.unit IS '單位';
-COMMENT ON COLUMN BOM.delivery_time IS '交貨時間（天）';
-COMMENT ON COLUMN BOM.failure_rate_per_million IS '每百萬小時預估故障次數';
-COMMENT ON COLUMN BOM.mtbf_hours IS '平均故障間隔（小時）';
-COMMENT ON COLUMN BOM.mttr_hours IS '平均修護時間（小時）';
-COMMENT ON COLUMN BOM.is_repairable IS '是否為可修件（Y/N）';
+COMMENT ON TABLE Equipment_Item_xref IS '裝備品項關聯檔（裝備-品項多對多，含可靠度資料）';
+COMMENT ON COLUMN Equipment_Item_xref.equipment_id IS '單機識別碼';
+COMMENT ON COLUMN Equipment_Item_xref.item_id IS '品項識別碼';
+COMMENT ON COLUMN Equipment_Item_xref.installation_qty IS '單機零附件裝置數';
+COMMENT ON COLUMN Equipment_Item_xref.installation_unit IS '單機零附件裝置單位';
+-- 原 BOM 欄位註解
+COMMENT ON COLUMN Equipment_Item_xref.delivery_time IS '交貨時間（天）';
+COMMENT ON COLUMN Equipment_Item_xref.failure_rate_per_million IS '每百萬小時預估故障次數';
+COMMENT ON COLUMN Equipment_Item_xref.mtbf_hours IS '平均故障間隔（小時）';
+COMMENT ON COLUMN Equipment_Item_xref.mttr_hours IS '平均修護時間（小時）';
+COMMENT ON COLUMN Equipment_Item_xref.is_repairable IS '是否為可修件（Y/N）';
 
 -- ============================================
 -- 第三階段：輔助資料建立
 -- ============================================
 
--- 8. 技術文件檔 (TechnicalDocument)
+-- 6. 技術文件檔 (TechnicalDocument)
 CREATE TABLE TechnicalDocument (
     document_id SERIAL PRIMARY KEY,
     equipment_id VARCHAR(50),
@@ -277,7 +248,7 @@ COMMENT ON COLUMN TechnicalDocument.security_level IS '機密等級';
 COMMENT ON COLUMN TechnicalDocument.eswbs_code IS 'ESWBS（五碼）';
 COMMENT ON COLUMN TechnicalDocument.accounting_code IS '會計編號';
 
--- 9. 裝備特性說明檔 (EquipmentSpecification)
+-- 7. 裝備特性說明檔 (EquipmentSpecification)
 CREATE TABLE EquipmentSpecification (
     equipment_id VARCHAR(50),
     spec_seq_no INT,
@@ -293,7 +264,7 @@ COMMENT ON COLUMN EquipmentSpecification.equipment_id IS '單機識別碼';
 COMMENT ON COLUMN EquipmentSpecification.spec_seq_no IS '單機特性說明序號';
 COMMENT ON COLUMN EquipmentSpecification.spec_description IS '單機特性說明';
 
--- 10. 品項規格檔 (ItemSpecification)
+-- 8. 品項規格檔 (ItemSpecification)
 CREATE TABLE ItemSpecification (
     spec_id SERIAL PRIMARY KEY,
     item_id VARCHAR(20),
@@ -318,7 +289,7 @@ COMMENT ON COLUMN ItemSpecification.spec_zh IS '規格資料翻譯';
 COMMENT ON COLUMN ItemSpecification.answer_en IS '英答';
 COMMENT ON COLUMN ItemSpecification.answer_zh IS '中答';
 
--- 11. 申編單檔 (ApplicationForm)
+-- 9. 申編單檔 (ApplicationForm)
 CREATE TABLE ApplicationForm (
     form_id SERIAL PRIMARY KEY,
     form_no VARCHAR(50) UNIQUE,
@@ -338,7 +309,7 @@ COMMENT ON COLUMN ApplicationForm.applicant_accounting_code IS '申請單位會�
 COMMENT ON COLUMN ApplicationForm.created_date IS '建立日期';
 COMMENT ON COLUMN ApplicationForm.updated_date IS '更新日期';
 
--- 12. 申編單明細檔 (ApplicationFormDetail)
+-- 10. 申編單明細檔 (ApplicationFormDetail)
 CREATE TABLE ApplicationFormDetail (
     detail_id SERIAL PRIMARY KEY,
     form_id INT,
@@ -364,25 +335,28 @@ COMMENT ON COLUMN ApplicationFormDetail.image_path IS '圖片路徑';
 -- 索引建立
 -- ============================================
 
--- 常用查詢索引
+-- 品項主檔索引
 CREATE INDEX idx_item_nsn ON Item(nsn);
 CREATE INDEX idx_item_category ON Item(item_category);
 CREATE INDEX idx_item_accounting_code ON Item(accounting_code);
 CREATE INDEX idx_item_weapon_system_code ON Item(weapon_system_code);
 
-CREATE INDEX idx_part_number ON PartNumber(part_number);
+-- 零件號索引
+CREATE INDEX idx_part_number ON Part_Number_xref(part_number);
+CREATE INDEX idx_part_supplier ON Part_Number_xref(part_number, supplier_id);
+
+-- 裝備主檔索引
 CREATE INDEX idx_equipment_eswbs ON Equipment(eswbs_code);
 CREATE INDEX idx_equipment_ship_type ON Equipment(ship_type);
 
-CREATE INDEX idx_bom_parent ON BOM(parent_equipment_id);
-CREATE INDEX idx_bom_child ON BOM(child_item_id);
-
+-- 廠商索引
 CREATE INDEX idx_supplier_code ON Supplier(supplier_code);
 CREATE INDEX idx_supplier_cage_code ON Supplier(cage_code);
 
--- 複合索引
-CREATE INDEX idx_equipment_item ON EquipmentItem(equipment_id, item_id);
-CREATE INDEX idx_part_supplier ON PartNumber(part_number, supplier_id);
+-- 裝備品項關聯索引
+CREATE INDEX idx_equipment_item ON Equipment_Item_xref(equipment_id, item_id);
+
+-- 品項規格索引
 CREATE INDEX idx_item_spec ON ItemSpecification(item_id, spec_no);
 
 -- 技術文件索引
@@ -432,16 +406,10 @@ CREATE TRIGGER update_equipment_updated_at BEFORE UPDATE ON Equipment
 CREATE TRIGGER update_item_updated_at BEFORE UPDATE ON Item
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_item_attribute_updated_at BEFORE UPDATE ON ItemAttribute
+CREATE TRIGGER update_part_number_updated_at BEFORE UPDATE ON Part_Number_xref
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_part_number_updated_at BEFORE UPDATE ON PartNumber
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_equipment_item_updated_at BEFORE UPDATE ON EquipmentItem
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_bom_updated_at BEFORE UPDATE ON BOM
+CREATE TRIGGER update_equipment_item_updated_at BEFORE UPDATE ON Equipment_Item_xref
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_technical_document_updated_at BEFORE UPDATE ON TechnicalDocument
@@ -465,7 +433,11 @@ BEGIN
     RAISE NOTICE '=========================================';
     RAISE NOTICE '資料庫建立完成！';
     RAISE NOTICE '資料庫名稱: sbir_equipment_db';
-    RAISE NOTICE '已建立 12 個資料表';
+    RAISE NOTICE '版本: V2.0 (重構版)';
+    RAISE NOTICE '已建立 10 個資料表（三大主表架構）';
+    RAISE NOTICE '- 刪除: BOM（合併到Equipment_Item_xref）';
+    RAISE NOTICE '- 刪除: ItemAttribute（合併到Item）';
+    RAISE NOTICE '- 重命名: PartNumber → Part_Number_xref';
     RAISE NOTICE '已建立所有索引和約束';
     RAISE NOTICE '已建立自動更新時間戳觸發器';
     RAISE NOTICE '=========================================';
