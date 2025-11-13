@@ -43,6 +43,8 @@ COMMENT ON COLUMN Supplier.supplier_name_en IS '廠家製造商（英文）';
 COMMENT ON COLUMN Supplier.supplier_name_zh IS '廠商中文名稱';
 COMMENT ON COLUMN Supplier.supplier_type IS '廠商類型（製造商/代理商）';
 COMMENT ON COLUMN Supplier.country_code IS '國家代碼';
+COMMENT ON COLUMN Supplier.created_at IS '建立時間';
+COMMENT ON COLUMN Supplier.updated_at IS '更新時間';
 
 -- 2. 裝備主檔 (Equipment) ⭐ 核心表
 CREATE TABLE Equipment (
@@ -81,6 +83,8 @@ COMMENT ON COLUMN Equipment.installation_qty IS '裝置數';
 COMMENT ON COLUMN Equipment.total_installation_qty IS '全艦裝置數';
 COMMENT ON COLUMN Equipment.maintenance_level IS '裝備維修等級代碼';
 COMMENT ON COLUMN Equipment.equipment_serial IS '裝備識別編號';
+COMMENT ON COLUMN Equipment.created_at IS '建立時間';
+COMMENT ON COLUMN Equipment.updated_at IS '更新時間';
 
 -- 3. 品項主檔 (Item) ⭐ 核心表（合併ItemAttribute）
 CREATE TABLE Item (
@@ -149,6 +153,8 @@ COMMENT ON COLUMN Item.manufacturing_capacity IS '製造能量';
 COMMENT ON COLUMN Item.repair_capacity IS '修理能量';
 COMMENT ON COLUMN Item.source_code IS '來源代號';
 COMMENT ON COLUMN Item.project_code IS '專案代號';
+COMMENT ON COLUMN Item.created_at IS '建立時間';
+COMMENT ON COLUMN Item.updated_at IS '更新時間';
 
 -- ============================================
 -- 第二階段：關聯表建立
@@ -178,6 +184,8 @@ COMMENT ON COLUMN Part_Number_xref.supplier_id IS '廠商ID';
 COMMENT ON COLUMN Part_Number_xref.obtain_level IS 'P/N獲得程度/參考號獲得程度';
 COMMENT ON COLUMN Part_Number_xref.obtain_source IS 'P/N獲得來源/參考號獲得來源';
 COMMENT ON COLUMN Part_Number_xref.is_primary IS '是否為主要零件號';
+COMMENT ON COLUMN Part_Number_xref.created_at IS '建立時間';
+COMMENT ON COLUMN Part_Number_xref.updated_at IS '更新時間';
 
 -- 5. 裝備品項關聯檔 (Equipment_Item_xref) ⭐ 合併BOM可靠度資料
 CREATE TABLE Equipment_Item_xref (
@@ -210,6 +218,8 @@ COMMENT ON COLUMN Equipment_Item_xref.failure_rate_per_million IS '每百萬小�
 COMMENT ON COLUMN Equipment_Item_xref.mtbf_hours IS '平均故障間隔（小時）';
 COMMENT ON COLUMN Equipment_Item_xref.mttr_hours IS '平均修護時間（小時）';
 COMMENT ON COLUMN Equipment_Item_xref.is_repairable IS '是否為可修件（Y/N）';
+COMMENT ON COLUMN Equipment_Item_xref.created_at IS '建立時間';
+COMMENT ON COLUMN Equipment_Item_xref.updated_at IS '更新時間';
 
 -- ============================================
 -- 第三階段：輔助資料建立
@@ -218,7 +228,6 @@ COMMENT ON COLUMN Equipment_Item_xref.is_repairable IS '是否為可修件（Y/N
 -- 6. 技術文件檔 (TechnicalDocument)
 CREATE TABLE TechnicalDocument (
     document_id SERIAL PRIMARY KEY,
-    equipment_id VARCHAR(50),
     document_name VARCHAR(200),
     document_version VARCHAR(20),
     shipyard_drawing_no VARCHAR(50),
@@ -230,13 +239,11 @@ CREATE TABLE TechnicalDocument (
     eswbs_code VARCHAR(20),
     accounting_code VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (equipment_id) REFERENCES Equipment(equipment_id) ON DELETE CASCADE
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-COMMENT ON TABLE TechnicalDocument IS '技術文件檔';
+COMMENT ON TABLE TechnicalDocument IS '技術文件檔（獨立主檔）';
 COMMENT ON COLUMN TechnicalDocument.document_id IS '文件ID（自動編號）';
-COMMENT ON COLUMN TechnicalDocument.equipment_id IS '單機識別碼';
 COMMENT ON COLUMN TechnicalDocument.document_name IS '圖名/書名';
 COMMENT ON COLUMN TechnicalDocument.document_version IS '技術文件版別/版次';
 COMMENT ON COLUMN TechnicalDocument.shipyard_drawing_no IS '船廠圖號';
@@ -247,6 +254,25 @@ COMMENT ON COLUMN TechnicalDocument.language IS '語言';
 COMMENT ON COLUMN TechnicalDocument.security_level IS '機密等級';
 COMMENT ON COLUMN TechnicalDocument.eswbs_code IS 'ESWBS（五碼）';
 COMMENT ON COLUMN TechnicalDocument.accounting_code IS '會計編號';
+COMMENT ON COLUMN TechnicalDocument.created_at IS '建立時間';
+COMMENT ON COLUMN TechnicalDocument.updated_at IS '更新時間';
+
+-- 6-1. 裝備文件關聯檔 (Equipment_Document_xref)
+CREATE TABLE Equipment_Document_xref (
+    equipment_id VARCHAR(50),
+    document_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (equipment_id, document_id),
+    FOREIGN KEY (equipment_id) REFERENCES Equipment(equipment_id) ON DELETE CASCADE,
+    FOREIGN KEY (document_id) REFERENCES TechnicalDocument(document_id) ON DELETE CASCADE
+);
+
+COMMENT ON TABLE Equipment_Document_xref IS '裝備文件關聯檔（裝備-技術文件多對多）';
+COMMENT ON COLUMN Equipment_Document_xref.equipment_id IS '單機識別碼';
+COMMENT ON COLUMN Equipment_Document_xref.document_id IS '文件ID';
+COMMENT ON COLUMN Equipment_Document_xref.created_at IS '建立時間';
+COMMENT ON COLUMN Equipment_Document_xref.updated_at IS '更新時間';
 
 -- 7. 裝備特性說明檔 (EquipmentSpecification)
 CREATE TABLE EquipmentSpecification (
@@ -263,6 +289,8 @@ COMMENT ON TABLE EquipmentSpecification IS '裝備特性說明檔';
 COMMENT ON COLUMN EquipmentSpecification.equipment_id IS '單機識別碼';
 COMMENT ON COLUMN EquipmentSpecification.spec_seq_no IS '單機特性說明序號';
 COMMENT ON COLUMN EquipmentSpecification.spec_description IS '單機特性說明';
+COMMENT ON COLUMN EquipmentSpecification.created_at IS '建立時間';
+COMMENT ON COLUMN EquipmentSpecification.updated_at IS '更新時間';
 
 -- 8. 品項規格檔 (ItemSpecification)
 CREATE TABLE ItemSpecification (
@@ -288,6 +316,8 @@ COMMENT ON COLUMN ItemSpecification.spec_en IS '規格資料英文';
 COMMENT ON COLUMN ItemSpecification.spec_zh IS '規格資料翻譯';
 COMMENT ON COLUMN ItemSpecification.answer_en IS '英答';
 COMMENT ON COLUMN ItemSpecification.answer_zh IS '中答';
+COMMENT ON COLUMN ItemSpecification.created_at IS '建立時間';
+COMMENT ON COLUMN ItemSpecification.updated_at IS '更新時間';
 
 -- 9. 申編單檔 (ApplicationForm)
 CREATE TABLE ApplicationForm (
@@ -330,6 +360,8 @@ COMMENT ON COLUMN ApplicationFormDetail.item_seq IS '項次';
 COMMENT ON COLUMN ApplicationFormDetail.item_id IS '品項識別碼';
 COMMENT ON COLUMN ApplicationFormDetail.document_source IS '文件來源';
 COMMENT ON COLUMN ApplicationFormDetail.image_path IS '圖片路徑';
+COMMENT ON COLUMN ApplicationFormDetail.created_at IS '建立時間';
+COMMENT ON COLUMN ApplicationFormDetail.updated_at IS '更新時間';
 
 -- ============================================
 -- 索引建立
@@ -356,11 +388,13 @@ CREATE INDEX idx_supplier_cage_code ON Supplier(cage_code);
 -- 裝備品項關聯索引
 CREATE INDEX idx_equipment_item ON Equipment_Item_xref(equipment_id, item_id);
 
+-- 裝備文件關聯索引
+CREATE INDEX idx_equipment_document ON Equipment_Document_xref(equipment_id, document_id);
+
 -- 品項規格索引
 CREATE INDEX idx_item_spec ON ItemSpecification(item_id, spec_no);
 
 -- 技術文件索引
-CREATE INDEX idx_tech_doc_equipment ON TechnicalDocument(equipment_id);
 CREATE INDEX idx_tech_doc_eswbs ON TechnicalDocument(eswbs_code);
 
 -- 申編單索引
@@ -412,6 +446,9 @@ CREATE TRIGGER update_part_number_updated_at BEFORE UPDATE ON Part_Number_xref
 CREATE TRIGGER update_equipment_item_updated_at BEFORE UPDATE ON Equipment_Item_xref
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_equipment_document_updated_at BEFORE UPDATE ON Equipment_Document_xref
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 CREATE TRIGGER update_technical_document_updated_at BEFORE UPDATE ON TechnicalDocument
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -434,10 +471,12 @@ BEGIN
     RAISE NOTICE '資料庫建立完成！';
     RAISE NOTICE '資料庫名稱: sbir_equipment_db';
     RAISE NOTICE '版本: V2.0 (重構版)';
-    RAISE NOTICE '已建立 10 個資料表（三大主表架構）';
+    RAISE NOTICE '已建立 11 個資料表（三大主表架構）';
     RAISE NOTICE '- 刪除: BOM（合併到Equipment_Item_xref）';
     RAISE NOTICE '- 刪除: ItemAttribute（合併到Item）';
     RAISE NOTICE '- 重命名: PartNumber → Part_Number_xref';
+    RAISE NOTICE '- 新增: Equipment_Document_xref（裝備-文件多對多）';
+    RAISE NOTICE '- 修改: TechnicalDocument改為獨立主檔（N:M關聯）';
     RAISE NOTICE '已建立所有索引和約束';
     RAISE NOTICE '已建立自動更新時間戳觸發器';
     RAISE NOTICE '=========================================';

@@ -2,7 +2,7 @@
 
 ## 📊 資料庫架構圖
 
-本圖展示 sbir_equipment_db 資料庫的實體關聯圖（Entity-Relationship Diagram），包含 **10 個資料表**（V2.0 重構版）及其關聯關係。
+本圖展示 sbir_equipment_db 資料庫的實體關聯圖（Entity-Relationship Diagram），包含 **11 個資料表**（V2.0 重構版）及其關聯關係。
 
 **重構說明**：
 - ✅ 以 Equipment（裝備）為中心設計
@@ -22,7 +22,7 @@ erDiagram
     %% ========================================
     EQUIPMENT ||--o{ EQUIPMENTSPECIFICATION : "1對多"
     EQUIPMENT ||--o{ EQUIPMENT_ITEM_XREF : "多對多"
-    EQUIPMENT ||--o{ TECHNICALDOCUMENT : "1對多"
+    EQUIPMENT ||--o{ EQUIPMENT_DOCUMENT_XREF : "多對多"
 
     %% ========================================
     %% 核心表：Item (品項主檔) ⭐
@@ -36,6 +36,11 @@ erDiagram
     %% 核心表：Supplier (廠商主檔) ⭐
     %% ========================================
     SUPPLIER ||--o{ PART_NUMBER_XREF : "1對多"
+
+    %% ========================================
+    %% TechnicalDocument (技術文件檔)
+    %% ========================================
+    TECHNICALDOCUMENT ||--o{ EQUIPMENT_DOCUMENT_XREF : "多對多"
 
     %% ========================================
     %% ApplicationForm (申編單檔)
@@ -131,13 +136,22 @@ erDiagram
 
     TECHNICALDOCUMENT {
         serial document_id PK "文件ID"
-        varchar equipment_id FK "單機識別碼"
         varchar document_name "圖名書名"
         varchar document_version "版別版次"
         varchar shipyard_drawing_no "船廠圖號"
+        varchar design_drawing_no "設計圖號"
         varchar document_type "資料類型"
+        varchar document_category "資料類別"
         varchar language "語言"
+        varchar security_level "機密等級"
         timestamp created_at "建立時間"
+    }
+
+    EQUIPMENT_DOCUMENT_XREF {
+        varchar equipment_id PK "單機識別碼(FK)"
+        int document_id PK "文件ID(FK)"
+        timestamp created_at "建立時間"
+        timestamp updated_at "更新時間"
     }
 
     APPLICATIONFORM {
@@ -168,11 +182,12 @@ erDiagram
 | **Equipment** | **裝備主檔** | 裝備 | ⭐ 核心表：管理艦艇裝備基本資料 |
 | **Item** | **品項主檔** | 品項 | ⭐ 核心表：管理零件、材料等品項基本資料（含屬性） |
 | **Supplier** | **廠商主檔** | 廠商 | ⭐ 核心表：供應商/製造商基本資料 |
+| **TechnicalDocument** | **技術文件檔** | 技術文件 | 技術文件/手冊主檔 |
 | **Equipment_Item_xref** | **裝備品項關聯檔** | 裝備-品項 | 裝備與品項的多對多關聯（含可靠度資料） |
 | **Part_Number_xref** | **零件號碼關聯檔** | 零件號 | 品項-零件號-廠商多對多關聯 |
+| **Equipment_Document_xref** | **裝備文件關聯檔** | 裝備-文件 | 裝備與技術文件的多對多關聯 |
 | **EquipmentSpecification** | **裝備特性說明檔** | 裝備特性 | 裝備的詳細特性說明（1:N） |
 | **ItemSpecification** | **品項規格檔** | 品項規格 | 品項的詳細規格說明（1:N） |
-| **TechnicalDocument** | **技術文件檔** | 技術文件 | 裝備相關技術文件與圖面 |
 | **ApplicationForm** | **申編單檔** | 申編單 | 申編單主檔 |
 | **ApplicationFormDetail** | **申編單明細檔** | 申編明細 | 申編單明細資料 |
 
@@ -192,7 +207,7 @@ erDiagram
 |--------|---------|------|------|
 | **EquipmentSpecification** | 1:N | Equipment → EquipmentSpecification | 一個裝備可有多個特性說明 |
 | **Equipment_Item_xref** | N:M | Equipment ↔ Item | 裝備包含哪些品項（含數量、可靠度） |
-| **TechnicalDocument** | 1:N | Equipment → TechnicalDocument | 裝備的技術文件 |
+| **Equipment_Document_xref** | N:M | Equipment ↔ TechnicalDocument | 裝備使用哪些技術文件/手冊 |
 
 ### 次要核心：Item（品項主檔）⭐
 
@@ -237,22 +252,23 @@ erDiagram
                               ↓
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                   第二階段：關聯表建立                        │
+│                   第二階段：輔助主檔建立                      │
 ├─────────────────────────────────────────────────────────────┤
-│  4️⃣ Part_Number_xref (零件號關聯) - 來源：20M, 19M          │
-│  5️⃣ Equipment_Item_xref (裝備品項) - 來源：18M              │
-│     └─ 包含原 BOM 可靠度欄位                                │
+│  4️⃣ TechnicalDocument (技術文件)      - 來源：待補充        │
+│  5️⃣ EquipmentSpecification (裝備特性) - 來源：16M           │
+│  6️⃣ ItemSpecification (品項規格)      - 來源：待補充        │
+│  7️⃣ ApplicationForm (申編單)          - 來源：待補充        │
 └─────────────────────────────────────────────────────────────┘
                               ↓
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                   第三階段：輔助資料建立                      │
+│                   第三階段：關聯表建立                        │
 ├─────────────────────────────────────────────────────────────┤
-│  6️⃣ TechnicalDocument (技術文件)      - 來源：待補充        │
-│  7️⃣ EquipmentSpecification (裝備特性) - 來源：16M           │
-│  8️⃣ ItemSpecification (品項規格)      - 來源：待補充        │
-│  9️⃣ ApplicationForm (申編單)          - 來源：待補充        │
-│  🔟 ApplicationFormDetail (申編明細)   - 來源：待補充        │
+│  8️⃣ Part_Number_xref (零件號關聯) - 來源：20M, 19M          │
+│  9️⃣ Equipment_Item_xref (裝備品項) - 來源：18M              │
+│     └─ 包含原 BOM 可靠度欄位                                │
+│  🔟 Equipment_Document_xref (裝備文件) - 來源：待補充        │
+│  1️⃣1️⃣ ApplicationFormDetail (申編明細)   - 來源：待補充        │
 └─────────────────────────────────────────────────────────────┘
                               ↓
                               ↓
@@ -282,10 +298,15 @@ erDiagram
     │                                                 │
     └─────────────────────────────────────────────────┘
               │              │              │
-              │ 1:N          │ N:M          │ 1:N
+              │ 1:N          │ N:M          │ N:M
               ↓              ↓              ↓
-       EquipmentSpec  Equipment_Item_xref  TechnicalDoc
-       (裝備特性)           │              (技術文件)
+       EquipmentSpec  Equipment_Item_xref  Equipment_Document_xref
+       (裝備特性)           │              (裝備-文件)
+                            │                     │
+                            │                     │ N:M
+                            │                     ↓
+                            │              TechnicalDocument
+                            │              (技術文件)
                             │
                             │ N:M
                             ↓
@@ -326,6 +347,7 @@ erDiagram
 | **業務邏輯鍵** | Equipment | equipment_id | 單機識別碼(CID) |
 | | Item | item_id | 品項識別號(NIIN) |
 | **複合主鍵** | Equipment_Item_xref | (equipment_id, item_id) | 裝備-品項 |
+| | Equipment_Document_xref | (equipment_id, document_id) | 裝備-文件 |
 | | EquipmentSpecification | (equipment_id, spec_seq_no) | 裝備-序號 |
 
 ### 重要外鍵關聯
@@ -337,8 +359,9 @@ erDiagram
 | Part_Number_xref | supplier_id | Supplier | SET NULL | 刪除廠商時零件號的廠商ID設為NULL |
 | Equipment_Item_xref | equipment_id | Equipment | CASCADE | 刪除裝備時連帶刪除關聯 |
 | Equipment_Item_xref | item_id | Item | CASCADE | 刪除品項時連帶刪除關聯 |
+| Equipment_Document_xref | equipment_id | Equipment | CASCADE | 刪除裝備時連帶刪除裝備-文件關聯 |
+| Equipment_Document_xref | document_id | TechnicalDocument | CASCADE | 刪除文件時連帶刪除裝備-文件關聯 |
 | EquipmentSpecification | equipment_id | Equipment | CASCADE | 刪除裝備時連帶刪除特性 |
-| TechnicalDocument | equipment_id | Equipment | CASCADE | 刪除裝備時連帶刪除文件 |
 | ApplicationFormDetail | form_id | ApplicationForm | CASCADE | 刪除申編單時連帶刪除明細 |
 | ApplicationFormDetail | item_id | Item | SET NULL | 刪除品項時明細的品項ID設為NULL |
 
@@ -358,10 +381,11 @@ erDiagram
    - ✅ ItemSpecification (品項規格檔) - 依賴 Item
    - ✅ Part_Number_xref (零件號碼關聯檔) - 依賴 Item, Supplier
    - ✅ EquipmentSpecification (裝備特性檔) - 依賴 Equipment
-   - ✅ TechnicalDocument (技術文件檔) - 依賴 Equipment
+   - ✅ TechnicalDocument (技術文件檔) - 無依賴（獨立主檔）
 
 3. **第三批（依賴第一、二批）**
    - ✅ Equipment_Item_xref (裝備品項關聯檔) - 依賴 Equipment, Item
+   - ✅ Equipment_Document_xref (裝備文件關聯檔) - 依賴 Equipment, TechnicalDocument
    - ✅ ApplicationFormDetail (申編單明細檔) - 依賴 ApplicationForm, Item
 
 ---
@@ -393,9 +417,9 @@ erDiagram
 - TechnicalDocument, EquipmentSpecification, ItemSpecification
 - ApplicationForm, ApplicationFormDetail
 
-### 重構後（V2.0）：10 個表
+### 重構後（V2.0）：11 個表
 - **三大主表**：Supplier, Equipment, Item
-- **兩個關聯表**：Part_Number_xref, Equipment_Item_xref
+- **三個關聯表**：Part_Number_xref, Equipment_Item_xref, Equipment_Document_xref
 - **五個輔助表**：EquipmentSpecification, ItemSpecification, TechnicalDocument, ApplicationForm, ApplicationFormDetail
 
 ### 重構變更
@@ -410,6 +434,11 @@ erDiagram
 3. ✅ **PartNumber → Part_Number_xref**
    - 表名統一使用 xref 命名規範
    - 結構不變
+
+4. ✅ **TechnicalDocument → 多對多關聯（Equipment_Document_xref）**
+   - TechnicalDocument 從 Equipment 的 1:N 關聯改為 N:M 關聯
+   - 新增 Equipment_Document_xref 作為關聯表
+   - 一本手冊可對應多個裝備，符合實際業務需求
 
 ---
 
