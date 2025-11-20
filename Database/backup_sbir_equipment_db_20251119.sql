@@ -38,11 +38,16 @@ COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UU
 
 CREATE FUNCTION public.update_updated_at_column() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
+    AS $$
+
+BEGIN
+
+    NEW.updated_at = CURRENT_TIMESTAMP;
+
+    RETURN NEW;
+
+END;
+
 $$;
 
 
@@ -308,7 +313,7 @@ COMMENT ON COLUMN public.applicationform.form_id IS '表單ID（自動編號）'
 -- Name: COLUMN applicationform.form_no; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.applicationform.form_no IS '表單編號';
+COMMENT ON COLUMN public.applicationform.form_no IS '表單 編號';
 
 
 --
@@ -322,7 +327,7 @@ COMMENT ON COLUMN public.applicationform.item_seq IS '項次';
 -- Name: COLUMN applicationform.submit_status; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.applicationform.submit_status IS '申編單提送狀態';
+COMMENT ON COLUMN public.applicationform.submit_status IS '申編單 提送狀態';
 
 
 --
@@ -433,7 +438,7 @@ COMMENT ON TABLE public.equipment IS '裝備主檔（核心表）';
 -- Name: COLUMN equipment.equipment_id; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.equipment.equipment_id IS '單機識別碼（CID）';
+COMMENT ON COLUMN public.equipment.equipment_id IS '單機識別碼';
 
 
 --
@@ -475,21 +480,21 @@ COMMENT ON COLUMN public.equipment."position" IS '位置';
 -- Name: COLUMN equipment.parent_cid; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.equipment.parent_cid IS '上層適用裝備單機識別碼';
+COMMENT ON COLUMN public.equipment.parent_cid IS '上層適用裝備單機識別碼CID';
 
 
 --
 -- Name: COLUMN equipment.eswbs_code; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.equipment.eswbs_code IS 'ESWBS（五碼）/族群結構碼';
+COMMENT ON COLUMN public.equipment.eswbs_code IS '族群結構碼(ESWBS)';
 
 
 --
 -- Name: COLUMN equipment.system_function_name; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.equipment.system_function_name IS '系統功能名稱';
+COMMENT ON COLUMN public.equipment.system_function_name IS '系統功能名稱(中+英) (族群結構碼上的名稱)';
 
 
 --
@@ -751,21 +756,21 @@ COMMENT ON TABLE public.item IS '品項主檔（合併ItemAttribute）';
 -- Name: COLUMN item.item_id; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.item.item_id IS '品項識別碼';
+COMMENT ON COLUMN public.item.item_id IS '品項識別號';
 
 
 --
 -- Name: COLUMN item.item_id_last5; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.item.item_id_last5 IS '品項識別碼（後五碼）';
+COMMENT ON COLUMN public.item.item_id_last5 IS '品項識別碼(後五碼)';
 
 
 --
 -- Name: COLUMN item.nsn; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.item.nsn IS 'NSN';
+COMMENT ON COLUMN public.item.nsn IS '國家料號';
 
 
 --
@@ -786,14 +791,14 @@ COMMENT ON COLUMN public.item.item_name_zh IS '中文品名';
 -- Name: COLUMN item.item_name_zh_short; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.item.item_name_zh_short IS '中文品名（9字內）';
+COMMENT ON COLUMN public.item.item_name_zh_short IS '中文品名(9字內)';
 
 
 --
 -- Name: COLUMN item.item_name_en; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.item.item_name_en IS '英文品名/INC英文品名';
+COMMENT ON COLUMN public.item.item_name_en IS '英文品名';
 
 
 --
@@ -849,7 +854,7 @@ COMMENT ON COLUMN public.item.package_qty IS '單位包裝量';
 -- Name: COLUMN item.weight_kg; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.item.weight_kg IS '重量（KG）';
+COMMENT ON COLUMN public.item.weight_kg IS '重量(KG)';
 
 
 --
@@ -1120,7 +1125,7 @@ COMMENT ON COLUMN public.part_number_xref.part_number_id IS '零件號碼ID（�
 -- Name: COLUMN part_number_xref.part_number; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.part_number_xref.part_number IS '配件號碼（P/N）';
+COMMENT ON COLUMN public.part_number_xref.part_number IS '配件號碼';
 
 
 --
@@ -1141,14 +1146,14 @@ COMMENT ON COLUMN public.part_number_xref.supplier_id IS '廠商ID';
 -- Name: COLUMN part_number_xref.obtain_level; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.part_number_xref.obtain_level IS 'P/N獲得程度/參考號獲得程度';
+COMMENT ON COLUMN public.part_number_xref.obtain_level IS '參考號獲得程度';
 
 
 --
 -- Name: COLUMN part_number_xref.obtain_source; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.part_number_xref.obtain_source IS 'P/N獲得來源/參考號獲得來源';
+COMMENT ON COLUMN public.part_number_xref.obtain_source IS '參考號獲得來源';
 
 
 --
@@ -1453,14 +1458,14 @@ COMMENT ON COLUMN public.technicaldocument.document_id IS '文件ID（自動編�
 -- Name: COLUMN technicaldocument.document_name; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.technicaldocument.document_name IS '圖名/書名';
+COMMENT ON COLUMN public.technicaldocument.document_name IS '書名';
 
 
 --
 -- Name: COLUMN technicaldocument.document_version; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.technicaldocument.document_version IS '技術文件版別/版次';
+COMMENT ON COLUMN public.technicaldocument.document_version IS '版次';
 
 
 --
@@ -1509,7 +1514,7 @@ COMMENT ON COLUMN public.technicaldocument.security_level IS '機密等級';
 -- Name: COLUMN technicaldocument.eswbs_code; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.technicaldocument.eswbs_code IS 'ESWBS（五碼）';
+COMMENT ON COLUMN public.technicaldocument.eswbs_code IS '族群結構碼(ESWBS)';
 
 
 --
