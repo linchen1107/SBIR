@@ -75,6 +75,8 @@ CREATE TABLE Item_Equipment_Ext (
     equipment_type VARCHAR(50),
     ship_type VARCHAR(50),
     position VARCHAR(100),
+    parent_equipment_zh VARCHAR(100),
+    parent_equipment_en VARCHAR(200),
     parent_cid VARCHAR(50),
     eswbs_code VARCHAR(20),
     system_function_name VARCHAR(200),
@@ -89,27 +91,31 @@ CREATE TABLE Item_Equipment_Ext (
 
 COMMENT ON TABLE Item_Equipment_Ext IS '裝備擴展表（FG類型專用）';
 COMMENT ON COLUMN Item_Equipment_Ext.item_uuid IS '品項UUID';
-COMMENT ON COLUMN Item_Equipment_Ext.equipment_type IS '型式';
+COMMENT ON COLUMN Item_Equipment_Ext.equipment_type IS '裝備形式（裝備型號/型式）';
 COMMENT ON COLUMN Item_Equipment_Ext.ship_type IS '艦型';
-COMMENT ON COLUMN Item_Equipment_Ext.position IS '位置';
+COMMENT ON COLUMN Item_Equipment_Ext.position IS '裝設地點（安裝位置）';
+COMMENT ON COLUMN Item_Equipment_Ext.parent_equipment_zh IS '上層適用裝備中文名稱';
+COMMENT ON COLUMN Item_Equipment_Ext.parent_equipment_en IS '上層適用裝備英文名稱';
 COMMENT ON COLUMN Item_Equipment_Ext.parent_cid IS '上層適用裝備CID';
-COMMENT ON COLUMN Item_Equipment_Ext.eswbs_code IS 'ESWBS（五碼）';
+COMMENT ON COLUMN Item_Equipment_Ext.eswbs_code IS '族群結構碼HSC（ESWBS五碼）';
 COMMENT ON COLUMN Item_Equipment_Ext.system_function_name IS '系統功能名稱';
-COMMENT ON COLUMN Item_Equipment_Ext.installation_qty IS '裝置數';
+COMMENT ON COLUMN Item_Equipment_Ext.installation_qty IS '同一類型數量（單艦裝置數量）';
 COMMENT ON COLUMN Item_Equipment_Ext.total_installation_qty IS '全艦裝置數';
 COMMENT ON COLUMN Item_Equipment_Ext.maintenance_level IS '裝備維修等級代碼';
-COMMENT ON COLUMN Item_Equipment_Ext.equipment_serial IS '裝備識別編號';
+COMMENT ON COLUMN Item_Equipment_Ext.equipment_serial IS '裝備序號（裝備識別編號）';
 
 -- 4. 料件擴展表 (Item_Material_Ext)
 CREATE TABLE Item_Material_Ext (
     item_uuid UUID PRIMARY KEY,
     item_id_last5 VARCHAR(5),
+    item_name_zh_short VARCHAR(20),
     nsn VARCHAR(20) UNIQUE,
     item_category VARCHAR(10),
     item_code VARCHAR(10),
     fiig VARCHAR(10),
     weapon_system_code VARCHAR(20),
     accounting_code VARCHAR(20),
+    issue_unit VARCHAR(10),
     unit_price_usd DECIMAL(10,2) CHECK (unit_price_usd >= 0),
     package_qty INT,
     weight_kg DECIMAL(10,3) CHECK (weight_kg >= 0),
@@ -135,12 +141,14 @@ CREATE TABLE Item_Material_Ext (
 COMMENT ON TABLE Item_Material_Ext IS '料件擴展表（SEMI/RM類型專用）';
 COMMENT ON COLUMN Item_Material_Ext.item_uuid IS '品項UUID';
 COMMENT ON COLUMN Item_Material_Ext.item_id_last5 IS '品項識別碼（後五碼）';
+COMMENT ON COLUMN Item_Material_Ext.item_name_zh_short IS '中文品名（9字內）';
 COMMENT ON COLUMN Item_Material_Ext.nsn IS 'NSN/國家料號';
 COMMENT ON COLUMN Item_Material_Ext.item_category IS '統一組類別';
 COMMENT ON COLUMN Item_Material_Ext.item_code IS '品名代號';
 COMMENT ON COLUMN Item_Material_Ext.fiig IS 'FIIG';
 COMMENT ON COLUMN Item_Material_Ext.weapon_system_code IS '武器系統代號';
 COMMENT ON COLUMN Item_Material_Ext.accounting_code IS '會計編號';
+COMMENT ON COLUMN Item_Material_Ext.issue_unit IS '撥發單位（EA/SET/LOT等）';
 COMMENT ON COLUMN Item_Material_Ext.unit_price_usd IS '美金單價';
 COMMENT ON COLUMN Item_Material_Ext.package_qty IS '單位包裝量';
 COMMENT ON COLUMN Item_Material_Ext.weight_kg IS '重量（KG）';
@@ -148,12 +156,12 @@ COMMENT ON COLUMN Item_Material_Ext.has_stock IS '有無料號';
 COMMENT ON COLUMN Item_Material_Ext.storage_life_code IS '存儲壽限代號';
 COMMENT ON COLUMN Item_Material_Ext.file_type_code IS '檔別代號';
 COMMENT ON COLUMN Item_Material_Ext.file_type_category IS '檔別區分';
-COMMENT ON COLUMN Item_Material_Ext.security_code IS '機密性代號';
-COMMENT ON COLUMN Item_Material_Ext.consumable_code IS '消耗性代號';
+COMMENT ON COLUMN Item_Material_Ext.security_code IS '機密性代號（U/C/S等）';
+COMMENT ON COLUMN Item_Material_Ext.consumable_code IS '消耗性代號（M/N等）';
 COMMENT ON COLUMN Item_Material_Ext.spec_indicator IS '規格指示';
 COMMENT ON COLUMN Item_Material_Ext.navy_source IS '海軍軍品來源';
 COMMENT ON COLUMN Item_Material_Ext.storage_type IS '儲存型式';
-COMMENT ON COLUMN Item_Material_Ext.life_process_code IS '壽限處理代號';
+COMMENT ON COLUMN Item_Material_Ext.life_process_code IS '處理代號（壽限處理）';
 COMMENT ON COLUMN Item_Material_Ext.manufacturing_capacity IS '製造能量';
 COMMENT ON COLUMN Item_Material_Ext.repair_capacity IS '修理能量';
 COMMENT ON COLUMN Item_Material_Ext.source_code IS '來源代號';
