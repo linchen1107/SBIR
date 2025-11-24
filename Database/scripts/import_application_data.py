@@ -89,7 +89,7 @@ def get_or_create_item(cursor, data, supplier_id):
     cursor.execute("""
         INSERT INTO Item (
             item_uuid, item_code, item_name_en, item_name_zh,
-            item_type, status, created_at, updated_at
+            item_type, status, date_created, date_updated
         )
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING item_uuid
@@ -186,7 +186,7 @@ def create_mrc_data(cursor, item_uuid, mrc_data):
 
         sort_order = mrc.get('sort_order', 0)
 
-        # mrc_id 是 serial，不需要提供
+        # mrc_uuid 是 UUID，會自動生成
         # spec_no 是 integer，spec_abbr 才是存放 MRC code 的欄位
         cursor.execute("""
             INSERT INTO MRC (
@@ -223,7 +223,7 @@ def create_part_number_xref(cursor, item_uuid, supplier_id, part_number_ref):
     cursor.execute("""
         INSERT INTO Part_Number_xref (
             item_uuid, supplier_id, part_number,
-            is_primary, created_at
+            is_primary, date_created
         )
         VALUES (%s, %s, %s, %s, %s)
     """, (

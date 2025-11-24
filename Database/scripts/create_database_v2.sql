@@ -34,8 +34,8 @@ CREATE TABLE Supplier (
     supplier_name_zh VARCHAR(100),
     supplier_type VARCHAR(20),
     country_code VARCHAR(10),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 COMMENT ON TABLE Supplier IS '廠商主檔';
@@ -56,8 +56,8 @@ CREATE TABLE Item (
     item_type VARCHAR(10) CHECK (item_type IN ('FG', 'SEMI', 'RM')),
     uom VARCHAR(10),
     status VARCHAR(20) DEFAULT 'Active' CHECK (status IN ('Active', 'Inactive')),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 COMMENT ON TABLE Item IS '品項主檔（統一Equipment與Item）';
@@ -84,8 +84,8 @@ CREATE TABLE Item_Equipment_Ext (
     total_installation_qty INT,
     maintenance_level VARCHAR(10),
     equipment_serial VARCHAR(50) UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (item_uuid) REFERENCES Item(item_uuid) ON DELETE CASCADE
 );
 
@@ -133,8 +133,8 @@ CREATE TABLE Item_Material_Ext (
     repair_capacity VARCHAR(10),
     source_code VARCHAR(10),
     project_code VARCHAR(20),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (item_uuid) REFERENCES Item(item_uuid) ON DELETE CASCADE
 );
 
@@ -181,8 +181,8 @@ CREATE TABLE BOM (
     effective_to DATE,
     status VARCHAR(20) DEFAULT 'Draft' CHECK (status IN ('Released', 'Draft')),
     remark TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (item_uuid) REFERENCES Item(item_uuid) ON DELETE CASCADE
 );
 
@@ -208,8 +208,8 @@ CREATE TABLE BOM_LINE (
     uom VARCHAR(10),
     position VARCHAR(100),
     remark TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (bom_uuid) REFERENCES BOM(bom_uuid) ON DELETE CASCADE,
     FOREIGN KEY (component_item_uuid) REFERENCES Item(item_uuid) ON DELETE CASCADE,
     CONSTRAINT unique_bom_line UNIQUE (bom_uuid, line_no)
@@ -229,7 +229,7 @@ COMMENT ON COLUMN BOM_LINE.remark IS '備註';
 
 -- 7. MRC 品項規格表 ⭐ 新增
 CREATE TABLE MRC (
-    mrc_id SERIAL PRIMARY KEY,
+    mrc_uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     item_uuid UUID NOT NULL,
     spec_no INT,
     spec_abbr VARCHAR(20),
@@ -237,13 +237,13 @@ CREATE TABLE MRC (
     spec_zh VARCHAR(200),
     answer_en VARCHAR(200),
     answer_zh VARCHAR(200),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (item_uuid) REFERENCES Item(item_uuid) ON DELETE CASCADE
 );
 
 COMMENT ON TABLE MRC IS '品項規格表';
-COMMENT ON COLUMN MRC.mrc_id IS 'MRC ID（自動編號）';
+COMMENT ON COLUMN MRC.mrc_uuid IS 'MRC UUID（主鍵）';
 COMMENT ON COLUMN MRC.item_uuid IS '品項UUID';
 COMMENT ON COLUMN MRC.spec_no IS '規格順序';
 COMMENT ON COLUMN MRC.spec_abbr IS '規格資料縮寫';
@@ -265,8 +265,8 @@ CREATE TABLE Part_Number_xref (
     obtain_level VARCHAR(10),
     obtain_source VARCHAR(50),
     is_primary BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (item_uuid) REFERENCES Item(item_uuid) ON DELETE CASCADE,
     FOREIGN KEY (supplier_id) REFERENCES Supplier(supplier_id) ON DELETE SET NULL,
     CONSTRAINT unique_part UNIQUE (part_number, item_uuid, supplier_id)
@@ -298,8 +298,8 @@ CREATE TABLE TechnicalDocument (
     security_level VARCHAR(10),
     eswbs_code VARCHAR(20),
     accounting_code VARCHAR(20),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 COMMENT ON TABLE TechnicalDocument IS '技術文件檔';
@@ -308,8 +308,8 @@ COMMENT ON TABLE TechnicalDocument IS '技術文件檔';
 CREATE TABLE Item_Document_xref (
     item_uuid UUID,
     document_id INT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (item_uuid, document_id),
     FOREIGN KEY (item_uuid) REFERENCES Item(item_uuid) ON DELETE CASCADE,
     FOREIGN KEY (document_id) REFERENCES TechnicalDocument(document_id) ON DELETE CASCADE
@@ -338,8 +338,8 @@ CREATE TABLE ApplicationFormDetail (
     item_uuid UUID,
     document_source VARCHAR(100),
     image_path VARCHAR(500),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (form_id) REFERENCES ApplicationForm(form_id) ON DELETE CASCADE,
     FOREIGN KEY (item_uuid) REFERENCES Item(item_uuid) ON DELETE SET NULL
 );
@@ -396,47 +396,47 @@ CREATE INDEX idx_app_detail_item ON ApplicationFormDetail(item_uuid);
 -- 建立更新時間戳自動更新函數
 -- ============================================
 
-CREATE OR REPLACE FUNCTION update_updated_at_column()
+CREATE OR REPLACE FUNCTION update_date_updated_column()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
+    NEW.date_updated = CURRENT_TIMESTAMP;
     RETURN NEW;
 END;
 $$ language 'plpgsql';
 
--- 為每個有 updated_at 欄位的表格建立觸發器
-CREATE TRIGGER update_supplier_updated_at BEFORE UPDATE ON Supplier
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- 為每個有 date_updated 欄位的表格建立觸發器
+CREATE TRIGGER update_supplier_date_updated BEFORE UPDATE ON Supplier
+    FOR EACH ROW EXECUTE FUNCTION update_date_updated_column();
 
-CREATE TRIGGER update_item_updated_at BEFORE UPDATE ON Item
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_item_date_updated BEFORE UPDATE ON Item
+    FOR EACH ROW EXECUTE FUNCTION update_date_updated_column();
 
-CREATE TRIGGER update_item_equip_ext_updated_at BEFORE UPDATE ON Item_Equipment_Ext
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_item_equip_ext_date_updated BEFORE UPDATE ON Item_Equipment_Ext
+    FOR EACH ROW EXECUTE FUNCTION update_date_updated_column();
 
-CREATE TRIGGER update_item_material_ext_updated_at BEFORE UPDATE ON Item_Material_Ext
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_item_material_ext_date_updated BEFORE UPDATE ON Item_Material_Ext
+    FOR EACH ROW EXECUTE FUNCTION update_date_updated_column();
 
-CREATE TRIGGER update_bom_updated_at BEFORE UPDATE ON BOM
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_bom_date_updated BEFORE UPDATE ON BOM
+    FOR EACH ROW EXECUTE FUNCTION update_date_updated_column();
 
-CREATE TRIGGER update_bom_line_updated_at BEFORE UPDATE ON BOM_LINE
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_bom_line_date_updated BEFORE UPDATE ON BOM_LINE
+    FOR EACH ROW EXECUTE FUNCTION update_date_updated_column();
 
-CREATE TRIGGER update_mrc_updated_at BEFORE UPDATE ON MRC
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_mrc_date_updated BEFORE UPDATE ON MRC
+    FOR EACH ROW EXECUTE FUNCTION update_date_updated_column();
 
-CREATE TRIGGER update_part_number_updated_at BEFORE UPDATE ON Part_Number_xref
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_part_number_date_updated BEFORE UPDATE ON Part_Number_xref
+    FOR EACH ROW EXECUTE FUNCTION update_date_updated_column();
 
-CREATE TRIGGER update_item_document_updated_at BEFORE UPDATE ON Item_Document_xref
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_item_document_date_updated BEFORE UPDATE ON Item_Document_xref
+    FOR EACH ROW EXECUTE FUNCTION update_date_updated_column();
 
-CREATE TRIGGER update_technical_document_updated_at BEFORE UPDATE ON TechnicalDocument
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_technical_document_date_updated BEFORE UPDATE ON TechnicalDocument
+    FOR EACH ROW EXECUTE FUNCTION update_date_updated_column();
 
-CREATE TRIGGER update_app_form_detail_updated_at BEFORE UPDATE ON ApplicationFormDetail
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_app_form_detail_date_updated BEFORE UPDATE ON ApplicationFormDetail
+    FOR EACH ROW EXECUTE FUNCTION update_date_updated_column();
 
 -- ============================================
 -- 完成訊息
