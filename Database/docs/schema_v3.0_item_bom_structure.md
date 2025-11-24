@@ -61,7 +61,7 @@
 | **BOM 結構** |                         |                |           |                            |
 | 5                  | BOM                     | BOM主表        | UUID      | BOM版本控制                |
 | 6                  | BOM_LINE                | BOM明細行 ⭐   | UUID      | Item自我關聯（元件清單）   |
-| 7                  | MRC                     | 品項規格表     | SERIAL    | 品項規格資料               |
+| 7                  | MRC                     | 品項規格表     | UUID      | 品項規格資料               |
 | **關聯表**   |                         |                |           |                            |
 | 8                  | Item_Supplier_xref      | 品項廠商關聯檔 | SERIAL    | 品項-零件號-廠商多對多關聯 |
 | **輔助資料** |                         |                |           |                            |
@@ -359,8 +359,8 @@ PGPASSWORD=willlin07 "/c/Program Files/PostgreSQL/16/bin/psql.exe" \
 | supplier_name_zh | 廠商中文名稱       | VARCHAR(100) | 📝     | 中文廠商名稱  |
 | supplier_type    | 廠商類型           | VARCHAR(20)  | 📝     | 製造商/代理商 |
 | country_code     | 國家代碼           | VARCHAR(10)  | 📝     | 國別代碼      |
-| created_at       | 建立時間           | TIMESTAMP    | 🔄     | 記錄建立時間  |
-| updated_at       | 更新時間           | TIMESTAMP    | 🔄     | 記錄更新時間  |
+| date_created       | 建立時間           | TIMESTAMP    | 🔄     | 記錄建立時間  |
+| date_updated       | 更新時間           | TIMESTAMP    | 🔄     | 記錄更新時間  |
 
 ---
 
@@ -378,8 +378,8 @@ PGPASSWORD=willlin07 "/c/Program Files/PostgreSQL/16/bin/psql.exe" \
 | item_type    | 品項類型     | VARCHAR(10)  | ⭐        | FG/SEMI/RM      |
 | uom          | 基本計量單位 | VARCHAR(10)  | 📝        | EA/SET/LOT等    |
 | state        | 狀態         | VARCHAR(20)  | 📝        | Active/Inactive |
-| created_at   | 建立時間     | TIMESTAMP    | 🔄        | 記錄建立時間    |
-| updated_at   | 更新時間     | TIMESTAMP    | 🔄        | 記錄更新時間    |
+| date_created   | 建立時間     | TIMESTAMP    | 🔄        | 記錄建立時間    |
+| date_updated   | 更新時間     | TIMESTAMP    | 🔄        | 記錄更新時間    |
 
 **約束**:
 
@@ -414,8 +414,8 @@ PGPASSWORD=willlin07 "/c/Program Files/PostgreSQL/16/bin/psql.exe" \
 | total_installation_qty | 全艦裝置數           | INT          | 📝     | 全艦總數        |
 | maintenance_level      | 裝備維修等級代碼     | VARCHAR(10)  | 📝     | 維修等級        |
 | equipment_serial       | 裝備序號             | VARCHAR(50)  | UNIQUE | 裝備識別編號    |
-| created_at             | 建立時間             | TIMESTAMP    | 🔄     |                 |
-| updated_at             | 更新時間             | TIMESTAMP    | 🔄     |                 |
+| date_created             | 建立時間             | TIMESTAMP    | 🔄     |                 |
+| date_updated             | 更新時間             | TIMESTAMP    | 🔄     |                 |
 
 **外鍵關聯**:
 
@@ -462,8 +462,8 @@ PGPASSWORD=willlin07 "/c/Program Files/PostgreSQL/16/bin/psql.exe" \
 | repair_capacity        | 修理能量             | VARCHAR(10)   | 📝     | 修理能力                |
 | source_code            | 來源代號             | VARCHAR(10)   | 📝     | 來源分類                |
 | project_code           | 專案代號             | VARCHAR(20)   | 📝     | 所屬專案                |
-| created_at             | 建立時間             | TIMESTAMP     | 🔄     |                         |
-| updated_at             | 更新時間             | TIMESTAMP     | 🔄     |                         |
+| date_created             | 建立時間             | TIMESTAMP     | 🔄     |                         |
+| date_updated             | 更新時間             | TIMESTAMP     | 🔄     |                         |
 
 **外鍵關聯**:
 
@@ -525,8 +525,8 @@ Item (電笛系統) → BOM v1.0 → BOM_LINE → Item (電笛系統主機)
 | effective_to   | 失效日   | DATE        | 📝   | 結束生效日期         |
 | state          | 狀態     | VARCHAR(20) | 📝   | Released/Draft       |
 | notes          | 備註     | TEXT        | 📝   | 備註說明             |
-| created_at     | 建立時間 | TIMESTAMP   | 🔄   |                      |
-| updated_at     | 更新時間 | TIMESTAMP   | 🔄   |                      |
+| date_created     | 建立時間 | TIMESTAMP   | 🔄   |                      |
+| date_updated     | 更新時間 | TIMESTAMP   | 🔄   |                      |
 
 **外鍵關聯**:
 
@@ -561,8 +561,8 @@ Item (電笛系統) → BOM v1.0 → BOM_LINE → Item (電笛系統主機)
 | uom                 | 用量單位 | VARCHAR(10)   | 📝   | 預設跟元件UOM一致       |
 | assembly_position   | 裝配位置 | VARCHAR(100)  | 📝   | 裝配位置/站別           |
 | notes               | 備註     | TEXT          | 📝   | 備註說明                |
-| created_at          | 建立時間 | TIMESTAMP     | 🔄   |                         |
-| updated_at          | 更新時間 | TIMESTAMP     | 🔄   |                         |
+| date_created          | 建立時間 | TIMESTAMP     | 🔄   |                         |
+| date_updated          | 更新時間 | TIMESTAMP     | 🔄   |                         |
 
 **外鍵關聯**:
 
@@ -589,11 +589,11 @@ Item (電笛系統) → BOM v1.0 → BOM_LINE → Item (電笛系統主機)
 ### 7. MRC (品項規格表)
 
 **用途**: 記錄品項的規格資料
-**V3.0 變更**: 取代 ItemSpecification，使用 mrc_id 主鍵
+**V3.0 變更**: 取代 ItemSpecification，使用 UUID 主鍵
 
 | 英文欄位名 | 中文名稱     | 資料類型     | 標記 | 說明            |
 | ---------- | ------------ | ------------ | ---- | --------------- |
-| mrc_id     | MRC ID       | SERIAL       | 🔑🔄 | 自動編號        |
+| mrc_uuid   | MRC UUID     | UUID         | 🔑🔄 | 自動生成 UUID   |
 | item_uuid  | 品項UUID     | UUID         | 🔗⭐ | 外鍵連結至 Item |
 | spec_no    | 規格順序     | INT          | 📝   | 順序編號        |
 | spec_abbr  | 規格資料縮寫 | VARCHAR(20)  | 📝   | 規格簡稱        |
@@ -601,8 +601,8 @@ Item (電笛系統) → BOM v1.0 → BOM_LINE → Item (電笛系統主機)
 | spec_zh    | 規格資料翻譯 | VARCHAR(200) | 📝   | 規格項目中文    |
 | answer_en  | 英答         | VARCHAR(200) | 📝   | 規格值英文      |
 | answer_zh  | 中答         | VARCHAR(200) | 📝   | 規格值中文      |
-| created_at | 建立時間     | TIMESTAMP    | 🔄   |                 |
-| updated_at | 更新時間     | TIMESTAMP    | 🔄   |                 |
+| date_created | 建立時間     | TIMESTAMP    | 🔄   |                 |
+| date_updated | 更新時間     | TIMESTAMP    | 🔄   |                 |
 
 **外鍵關聯**:
 
@@ -632,8 +632,8 @@ Item (電笛系統) → BOM v1.0 → BOM_LINE → Item (電笛系統主機)
 | acquisition_difficulty | 參考號獲得程度   | VARCHAR(10) | 📝   | 取得難易度          |
 | acquisition_channel    | 參考號獲得來源   | VARCHAR(50) | 📝   | 取得管道            |
 | is_primary             | 是否為主要零件號 | BOOLEAN     | 📝   | 主/替代零件號       |
-| created_at             | 建立時間         | TIMESTAMP   | 🔄   |                     |
-| updated_at             | 更新時間         | TIMESTAMP   | 🔄   |                     |
+| date_created             | 建立時間         | TIMESTAMP   | 🔄   |                     |
+| date_updated             | 更新時間         | TIMESTAMP   | 🔄   |                     |
 
 **外鍵關聯**:
 
@@ -671,8 +671,8 @@ Item (電笛系統) → BOM v1.0 → BOM_LINE → Item (電笛系統主機)
 | security_level      | 機密等級      | VARCHAR(10)  | 📝   | 機密分級     |
 | eswbs_code          | ESWBS（五碼） | VARCHAR(20)  | 📝   | 裝備分類碼   |
 | accounting_code     | 會計編號      | VARCHAR(20)  | 📝   | 會計科目     |
-| created_at          | 建立時間      | TIMESTAMP    | 🔄   |              |
-| updated_at          | 更新時間      | TIMESTAMP    | 🔄   |              |
+| date_created          | 建立時間      | TIMESTAMP    | 🔄   |              |
+| date_updated          | 更新時間      | TIMESTAMP    | 🔄   |              |
 
 **索引**:
 
@@ -689,8 +689,8 @@ Item (電笛系統) → BOM v1.0 → BOM_LINE → Item (電笛系統主機)
 | ----------- | -------- | --------- | ------ | ---------------------------- |
 | item_uuid   | 品項UUID | UUID      | 🔑🔗⭐ | 外鍵連結至 Item              |
 | document_id | 文件ID   | INT       | 🔑🔗⭐ | 外鍵連結至 TechnicalDocument |
-| created_at  | 建立時間 | TIMESTAMP | 🔄     |                              |
-| updated_at  | 更新時間 | TIMESTAMP | 🔄     |                              |
+| date_created  | 建立時間 | TIMESTAMP | 🔄     |                              |
+| date_updated  | 更新時間 | TIMESTAMP | 🔄     |                              |
 
 **複合主鍵**: (item_uuid, document_id)
 
@@ -712,8 +712,8 @@ Item (電笛系統) → BOM v1.0 → BOM_LINE → Item (電笛系統主機)
 | line_number     | 項次       | INT          | 📝   | 明細序號                   |
 | document_source | 文件來源   | VARCHAR(100) | 📝   | 資料來源文件               |
 | attachment_path | 圖片路徑   | VARCHAR(500) | 📝   | 附件路徑                   |
-| created_at      | 建立時間   | TIMESTAMP    | 🔄   |                            |
-| updated_at      | 更新時間   | TIMESTAMP    | 🔄   |                            |
+| date_created      | 建立時間   | TIMESTAMP    | 🔄   |                            |
+| date_updated      | 更新時間   | TIMESTAMP    | 🔄   |                            |
 
 **外鍵關聯**:
 
@@ -770,8 +770,8 @@ Item (電笛系統) → BOM v1.0 → BOM_LINE → Item (電笛系統主機)
 | equipment_name   | 裝備名稱   | VARCHAR(200) | 📝     | 相關裝備名稱               |
 | custom_fields    | 自定義欄位 | JSONB        | 📝     | 動態擴充欄位               |
 | state            | 狀態       | VARCHAR(20)  | 📝     | Draft/Submitted等          |
-| created_at       | 建立時間   | TIMESTAMP    | 🔄     |                            |
-| updated_at       | 更新時間   | TIMESTAMP    | 🔄     |                            |
+| date_created       | 建立時間   | TIMESTAMP    | 🔄     |                            |
+| date_updated       | 更新時間   | TIMESTAMP    | 🔄     |                            |
 
 **外鍵關聯**:
 
@@ -801,8 +801,8 @@ Item (電笛系統) → BOM v1.0 → BOM_LINE → Item (電笛系統主機)
 | supplier_code     | 廠家代號     | VARCHAR(20)  | 📝     | 相關廠商代號           |
 | part_number       | 配件號碼     | VARCHAR(50)  | 📝     | P/N                    |
 | state             | 狀態         | VARCHAR(20)  | 📝     | Draft/Submitted等      |
-| created_at        | 建立時間     | TIMESTAMP    | 🔄     |                        |
-| updated_at        | 更新時間     | TIMESTAMP    | 🔄     |                        |
+| date_created        | 建立時間     | TIMESTAMP    | 🔄     |                        |
+| date_updated        | 更新時間     | TIMESTAMP    | 🔄     |                        |
 
 **外鍵關聯**:
 
@@ -853,16 +853,302 @@ Item (電笛系統) → BOM v1.0 → BOM_LINE → Item (電笛系統主機)
 
 ### BOM 自我關聯說明
 
+#### 基本概念
+
+在 V3.0 架構中，**同一個 Item 可以同時扮演兩個角色**：
+- **父項（爸爸）**：有自己的 BOM，包含其他子項
+- **子項（兒子）**：出現在其他 Item 的 BOM 中
+
+這就是「Item 自己對自己多對多」的設計，透過 BOM + BOM_LINE 實現。
+
+#### 電笛系統範例（測試資料）
+
 ```
 電笛系統 (FG)
   └── BOM v1.0
-        └── BOM_LINE → 電笛系統主機 (SEMI)
+        └── BOM_LINE → 電笛系統主機 (SEMI) ⭐ 既是兒子也是爸爸
                           └── BOM v1.0
                                 ├── BOM_LINE → 電笛喇叭 x2 (RM)
                                 ├── BOM_LINE → 電笛控制面板 (RM)
                                 ├── BOM_LINE → 擴大機模組 (RM)
                                 └── BOM_LINE → 電源供應器 (RM)
 ```
+
+#### 實際案例：往復式泵組（當前資料）
+
+從資料庫實際資料可見，**往復式泵組 (4320YETL)** 完美展示了這個概念：
+
+##### 1️⃣ 往復式泵組當「兒子」
+它是逆滲透淡水製造機的子項：
+```sql
+-- 查詢結果
+SELECT parent_i.item_name_zh, bl.qty_per
+FROM "BOM_line" bl
+JOIN "BOM" b ON bl.bom_uuid = b.bom_uuid
+JOIN "ITEM" parent_i ON b.item_uuid = parent_i.item_uuid
+WHERE bl.component_item_uuid = (
+    SELECT item_uuid FROM "ITEM" WHERE item_code = '4320YETL'
+);
+
+-- 結果
+      parent      |  qty
+------------------+--------
+ 逆滲透淡水製造機 | 1.0000
+ 逆滲透淡水製造機 | 2.0000
+```
+
+##### 2️⃣ 往復式泵組當「爸爸」
+它也有自己的 BOM，包含更小的零組件：
+```sql
+-- 查詢結果
+SELECT bl.line_no, child_i.item_name_zh, bl.qty_per
+FROM "BOM" b
+JOIN "BOM_line" bl ON b.bom_uuid = bl.bom_uuid
+JOIN "ITEM" child_i ON bl.component_item_uuid = child_i.item_uuid
+WHERE b.item_uuid = (
+    SELECT item_uuid FROM "ITEM" WHERE item_code = '4320YETL'
+)
+ORDER BY bl.line_no;
+
+-- 結果
+line_no |   child    | qty_per
+---------+------------+---------
+       1 | 交流電動機 |  1.0000
+       2 | 電源供應器 |  1.0000
+       3 | 按鈕開關   |  2.0000
+```
+
+##### 完整階層結構
+```
+逆滲透淡水製造機 (4610YETL) [FG]
+  ├─ 往復式泵組 (4320YETL) [FG] ⭐ 關鍵角色
+  │    ├─ 交流電動機 (6105YETL) [FG]
+  │    ├─ 電源供應器 (6120YETL) [FG]
+  │    └─ 按鈕開關 (5930YETL) [FG] x2
+  ├─ 電磁繼電器 (5945YETL) [FG]
+  ├─ 端子箱 (5940YETL) [FG]
+  └─ 蜂鳴器 (6350YETL) [FG]
+```
+
+---
+
+### 如何插入 BOM 自我參照資料
+
+#### 步驟 1：建立所有 Item
+
+```sql
+-- 頂層裝備（滅火系統）
+INSERT INTO "ITEM" (item_uuid, item_code, item_name_zh, item_type, uom)
+VALUES (
+    '11111111-0000-0000-0000-000000000001',
+    'FIRE-SYS-001',
+    '滅火系統',
+    'FG',
+    'SET'
+);
+
+-- 中間裝備（引擎）⭐ 既是兒子也是爸爸
+INSERT INTO "ITEM" (item_uuid, item_code, item_name_zh, item_type, uom)
+VALUES (
+    '22222222-0000-0000-0000-000000000002',
+    'ENGINE-001',
+    '引擎',
+    'SEMI',
+    'EA'
+);
+
+-- 底層零件（活塞、汽缸、曲軸）
+INSERT INTO "ITEM" (item_uuid, item_code, item_name_zh, item_type, uom)
+VALUES
+    ('33333333-0000-0000-0000-000000000003', 'PISTON-001', '活塞', 'RM', 'EA'),
+    ('44444444-0000-0000-0000-000000000004', 'CYLINDER-001', '汽缸', 'RM', 'EA'),
+    ('55555555-0000-0000-0000-000000000005', 'CRANKSHAFT-001', '曲軸', 'RM', 'EA');
+```
+
+#### 步驟 2：建立 BOM（版本控制）
+
+```sql
+-- 滅火系統的 BOM
+INSERT INTO "BOM" (bom_uuid, item_uuid, bom_code, revision, state)
+VALUES (
+    'aaaaaaaa-0000-0000-0000-000000000001',
+    '11111111-0000-0000-0000-000000000001',  -- 滅火系統 UUID
+    'BOM-FIRE-SYS-V1',
+    '1.0',
+    'Released'
+);
+
+-- 引擎的 BOM ⭐ 關鍵：中間層也有自己的 BOM
+INSERT INTO "BOM" (bom_uuid, item_uuid, bom_code, revision, state)
+VALUES (
+    'bbbbbbbb-0000-0000-0000-000000000002',
+    '22222222-0000-0000-0000-000000000002',  -- 引擎 UUID
+    'BOM-ENGINE-V1',
+    '1.0',
+    'Released'
+);
+```
+
+#### 步驟 3：建立 BOM_LINE（父子關係）
+
+```sql
+-- ========== 第一層關係：滅火系統 → 引擎 ==========
+-- 引擎在這裡是「兒子」
+INSERT INTO "BOM_line" (line_uuid, bom_uuid, line_no, component_item_uuid, qty_per, uom)
+VALUES (
+    'cccccccc-0000-0000-0000-000000000001',
+    'aaaaaaaa-0000-0000-0000-000000000001',  -- 滅火系統的 BOM
+    1,
+    '22222222-0000-0000-0000-000000000002',  -- 引擎 UUID ⬅️ 引擎是子項
+    1.0000,
+    'EA'
+);
+
+-- ========== 第二層關係：引擎 → 零組件 ==========
+-- 引擎在這裡是「爸爸」
+INSERT INTO "BOM_line" (line_uuid, bom_uuid, line_no, component_item_uuid, qty_per, uom)
+VALUES
+    -- 引擎 → 活塞
+    ('dddddddd-0000-0000-0000-000000000002',
+     'bbbbbbbb-0000-0000-0000-000000000002',  -- 引擎的 BOM ⬅️ 引擎當爸爸
+     1,
+     '33333333-0000-0000-0000-000000000003',  -- 活塞 UUID
+     6.0000,
+     'EA'),
+    -- 引擎 → 汽缸
+    ('eeeeeeee-0000-0000-0000-000000000003',
+     'bbbbbbbb-0000-0000-0000-000000000002',
+     2,
+     '44444444-0000-0000-0000-000000000004',  -- 汽缸 UUID
+     6.0000,
+     'EA'),
+    -- 引擎 → 曲軸
+    ('ffffffff-0000-0000-0000-000000000004',
+     'bbbbbbbb-0000-0000-0000-000000000002',
+     3,
+     '55555555-0000-0000-0000-000000000005',  -- 曲軸 UUID
+     1.0000,
+     'EA');
+```
+
+---
+
+### 如何查詢父子關係
+
+#### 查詢 1：找出某個 Item 當「兒子」時的父項
+
+```sql
+-- 引擎的父項是誰？
+SELECT
+    parent_i.item_name_zh AS parent_item,
+    parent_i.item_code,
+    bl.qty_per
+FROM "BOM_line" bl
+JOIN "BOM" b ON bl.bom_uuid = b.bom_uuid
+JOIN "ITEM" parent_i ON b.item_uuid = parent_i.item_uuid
+WHERE bl.component_item_uuid = (
+    SELECT item_uuid FROM "ITEM" WHERE item_code = 'ENGINE-001'
+);
+```
+
+#### 查詢 2：找出某個 Item 當「爸爸」時的子項
+
+```sql
+-- 引擎包含哪些子項？
+SELECT
+    bl.line_no,
+    child_i.item_name_zh AS child_item,
+    child_i.item_code,
+    bl.qty_per
+FROM "BOM" b
+JOIN "BOM_line" bl ON b.bom_uuid = bl.bom_uuid
+JOIN "ITEM" child_i ON bl.component_item_uuid = child_i.item_uuid
+WHERE b.item_uuid = (
+    SELECT item_uuid FROM "ITEM" WHERE item_code = 'ENGINE-001'
+)
+ORDER BY bl.line_no;
+```
+
+#### 查詢 3：完整多層 BOM 展開（遞迴查詢）
+
+```sql
+-- 從頂層展開完整的 BOM 階層結構
+WITH RECURSIVE bom_tree AS (
+    -- 起始層：頂層裝備
+    SELECT
+        i.item_uuid,
+        i.item_code,
+        i.item_name_zh,
+        i.item_type,
+        CAST(NULL AS DECIMAL(10,4)) AS qty_per,
+        1 AS level,
+        i.item_name_zh AS path
+    FROM "ITEM" i
+    WHERE i.item_code = 'FIRE-SYS-001'
+
+    UNION ALL
+
+    -- 遞迴部分：找子項
+    SELECT
+        child.item_uuid,
+        child.item_code,
+        child.item_name_zh,
+        child.item_type,
+        bl.qty_per,
+        parent.level + 1,
+        parent.path || ' → ' || child.item_name_zh
+    FROM bom_tree parent
+    JOIN "BOM" b ON parent.item_uuid = b.item_uuid
+    JOIN "BOM_line" bl ON b.bom_uuid = bl.bom_uuid
+    JOIN "ITEM" child ON bl.component_item_uuid = child.item_uuid
+    WHERE parent.level < 10  -- 防止無限遞迴
+)
+SELECT
+    level,
+    REPEAT('  ', level - 1) || item_name_zh AS hierarchy,
+    item_code,
+    item_type,
+    COALESCE(qty_per::TEXT, '-') AS qty
+FROM bom_tree
+ORDER BY path, level;
+```
+
+---
+
+### 資料庫表結構關係
+
+```
+ITEM 表
+┌─────────────┐
+│ item_uuid   │ ← 主鍵
+│ item_code   │
+│ item_name_zh│
+│ item_type   │
+└─────────────┘
+      ↑ ↓
+      │ │ 自我參照透過 BOM + BOM_LINE
+      │ │
+      ↓ ↑
+┌─────────────┐       ┌──────────────────┐
+│ BOM         │       │ BOM_LINE         │
+├─────────────┤  1:N  ├──────────────────┤
+│ bom_uuid    │◄──────┤ bom_uuid         │
+│ item_uuid   │───┐   │ component_item_uuid│─┐
+└─────────────┘   │   └──────────────────┘  │
+                  │                          │
+                  └──────────────────────────┘
+                    兩個 FK 都指向 ITEM.item_uuid
+```
+
+### 💡 關鍵理解
+
+1. **BOM.item_uuid**：這個 Item 是「爸爸」（父項）
+2. **BOM_LINE.component_item_uuid**：這個 Item 是「兒子」（子項）
+3. **同一個 Item** 可以同時出現在：
+   - 某個 BOM 的 `item_uuid`（當爸爸）
+   - 某個 BOM_LINE 的 `component_item_uuid`（當兒子）
+
+這就是「自己對自己多對多」的實現方式！
 
 ---
 
@@ -875,6 +1161,7 @@ Item (電笛系統) → BOM v1.0 → BOM_LINE → Item (電笛系統主機)
 | Item     | item_uuid | 品項UUID |
 | BOM      | bom_uuid  | BOM UUID |
 | BOM_LINE | line_uuid | 行UUID   |
+| MRC      | mrc_uuid  | MRC UUID |
 
 ### 自動編號主鍵 (SERIAL)
 
@@ -883,7 +1170,6 @@ Item (電笛系統) → BOM v1.0 → BOM_LINE → Item (電笛系統主機)
 | Supplier                | supplier_id      | 廠商ID     |
 | Item_Supplier_xref      | part_number_id   | 零件號碼ID |
 | TechnicalDocument       | document_id      | 文件ID     |
-| MRC                     | mrc_id           | MRC ID     |
 | ApplicationFormDetail   | detail_id        | 明細ID     |
 | ApplicationForm         | form_id          | 表單ID     |
 | SupplierCodeApplication | application_uuid | 申請單UUID |
@@ -901,23 +1187,23 @@ Item (電笛系統) → BOM v1.0 → BOM_LINE → Item (電笛系統主機)
 
 ## ⚙️ 自動觸發器
 
-所有包含 `updated_at` 欄位的資料表都設有自動更新觸發器：
+所有包含 `date_updated` 欄位的資料表都設有自動更新觸發器：
 
 **觸發器清單** (V3.1 共 13 個):
 
-1. update_supplier_updated_at (Supplier表)
-2. update_item_updated_at (Item表)
-3. update_item_equip_ext_updated_at (Item_Equipment_Ext表)
-4. update_item_material_ext_updated_at (Item_Material_Ext表)
-5. update_bom_updated_at (BOM表)
-6. update_bom_line_updated_at (BOM_LINE表)
-7. update_mrc_updated_at (MRC表)
-8. update_item_supplier_updated_at (Item_Supplier_xref表)
-9. update_item_document_updated_at (Item_Document_xref表)
-10. update_technical_document_updated_at (TechnicalDocument表)
-11. update_app_form_detail_updated_at (ApplicationFormDetail表)
-12. update_supplier_app_updated_at (SupplierCodeApplication表)
-13. update_cid_app_updated_at (CIDApplication表)
+1. update_supplier_date_updated (Supplier表)
+2. update_item_date_updated (Item表)
+3. update_item_equip_ext_date_updated (Item_Equipment_Ext表)
+4. update_item_material_ext_date_updated (Item_Material_Ext表)
+5. update_bom_date_updated (BOM表)
+6. update_bom_line_date_updated (BOM_LINE表)
+7. update_mrc_date_updated (MRC表)
+8. update_item_supplier_date_updated (Item_Supplier_xref表)
+9. update_item_document_date_updated (Item_Document_xref表)
+10. update_technical_document_date_updated (TechnicalDocument表)
+11. update_app_form_detail_date_updated (ApplicationFormDetail表)
+12. update_supplier_app_date_updated (SupplierCodeApplication表)
+13. update_cid_app_date_updated (CIDApplication表)
 
 ---
 

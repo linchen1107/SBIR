@@ -104,7 +104,7 @@ def get_or_create_item(cursor, row_data):
     cursor.execute("""
         INSERT INTO Item (
             item_uuid, item_code, item_name_en, item_name_zh,
-            item_type, status, created_at, updated_at
+            item_type, status, date_created, date_updated
         )
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING item_uuid
