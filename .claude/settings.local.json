@@ -9,7 +9,9 @@
       "Bash(\"/c/Program Files/PostgreSQL/16/bin/psql.exe\" -U postgres -h localhost -p 5432 -f \"c:/github/SBIR/Database/create_database.sql\")",
       "Bash(PGPASSWORD=willlin07 \"/c/Program Files/PostgreSQL/16/bin/psql.exe\" -U postgres -h localhost -p 5432 -d sbir_equipment_db -c \"SELECT supplier_id, cage_code FROM Supplier;\")",
       "Bash(python -c:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(iconv:*)",
+      "Bash(PGPASSWORD=willlin07 \"/c/Program Files/PostgreSQL/16/bin/psql.exe\" -U postgres -h localhost -p 5432 -d sbir_equipment_db_v3 -c \"\\d+ application\")"
     ],
     "deny": [],
     "ask": []
