@@ -40,7 +40,7 @@
   - [BOM - BOM主表](#5-bom-bom主表)
   - [BOM_LINE - BOM明細行](#6-bom_line-bom明細行)
   - [MRC - 品項規格表](#7-mrc-品項規格表)
-  - [Part_Number_xref - 零件號碼關聯檔](#8-part_number_xref-零件號碼關聯檔)
+  - [item_number_xref - 零件號碼關聯檔](#8-item_number_xref-零件號碼關聯檔)
   - [TechnicalDocument - 技術文件檔](#9-technicaldocument-技術文件檔)
   - [Item_Document_xref - 品項文件關聯檔](#10-item_document_xref-品項文件關聯檔)
   - [SupplierCodeApplication - 廠商代號申請表](#11-suppliercodeapplication-廠商代號申請表)
@@ -69,7 +69,7 @@
 | 5 | BOM | BOM主表 | UUID | date_created | BOM版本控制 |
 | 6 | BOM_LINE | BOM明細行 ⭐ | UUID | date_created | Item自我關聯（元件清單） |
 | 7 | MRC | 品項規格表 | UUID | date_created | 品項規格資料 |
-| 8 | Part_Number_xref | 零件號碼關聯檔 | SERIAL | date_created | 品項-零件號-廠商多對多關聯 |
+| 8 | item_number_xref | 零件號碼關聯檔 | SERIAL | date_created | 品項-零件號-廠商多對多關聯 |
 | 9 | TechnicalDocument | 技術文件檔 | SERIAL | date_created | 技術文件/手冊主檔 |
 | 10 | Item_Document_xref | 品項文件關聯檔 | 複合鍵 | date_created | 品項-技術文件多對多關聯 |
 | 11 | SupplierCodeApplication | 廠商代號申請表 | UUID | date_created | 廠商代號申請 |
@@ -312,10 +312,11 @@
 
 ---
 
-### 8. Part_Number_xref（零件號碼關聯檔）
+### 8. item_number_xref（零件號碼關聯檔）
 
 **用途**: 品項-零件號-廠商的多對多關聯
 **來源**: 20M_料號主要件號檔
+**表名**: 實際資料庫表名為 `item_number_xref`（小寫，底線分隔）
 
 | 英文欄位名 | 中文名稱 | 資料類型 | 標記 | 說明 |
 |-----------|---------|---------|------|------|
@@ -495,7 +496,7 @@
 | equipment_name | 裝備名稱 | VARCHAR(255) | 📝 | 裝備名稱 |
 | usage_location | 使用地點 | INT | 📝 | 使用位置 |
 | quantity_per_unit | 單位數量 | JSON | 📝 | 數量（JSON格式） |
-| mrc_data | MRC資料 | VARCHAR(255) | 📝 | 規格資料 |
+| mrc_data | MRC資料 | JSON | 📝 | 規格資料（JSON格式） |
 | document_reference | 文件參考 | VARCHAR(255) | 📝 | 參考文件 |
 | applicant_unit | 申請單位 | VARCHAR(100) | 📝 | 申請部門 |
 | contact_info | 聯絡資訊 | VARCHAR(100) | 📝 | 聯絡方式 |
@@ -655,7 +656,7 @@
 │              核心裝備管理系統（V3.0）                  │
 │          (使用 date_created/date_updated)               │
 │                                                         │
-│  Supplier ─┬─ Part_Number_xref ─┬─ Item ⭐ ─┬─ Item_Equipment_Ext
+│  Supplier ─┬─ item_number_xref ─┬─ Item ⭐ ─┬─ Item_Equipment_Ext
 │            │                      │           ├─ Item_Material_Ext
 │            └─ SupplierCodeApplication        ├─ BOM → BOM_LINE (自我關聯)
 │                                              ├─ MRC
@@ -699,7 +700,7 @@ Application (申編單主表)
 
 **核心裝備表（12個）**:
 - Supplier, Item, Item_Equipment_Ext, Item_Material_Ext
-- BOM, BOM_LINE, MRC, Part_Number_xref
+- BOM, BOM_LINE, MRC, item_number_xref
 - TechnicalDocument, Item_Document_xref
 - SupplierCodeApplication, CIDApplication
 
@@ -759,16 +760,16 @@ $$ language 'plpgsql';
 
 ### 自動編號主鍵 SERIAL（3個表）
 - Supplier
-- Part_Number_xref
+- item_number_xref
 - TechnicalDocument
 
 ### 字串主鍵（1個表）
 - UserSession (session_id)
 
-### 複合主鍵（4個表）
-- Item_Equipment_Ext (item_uuid FK)
-- Item_Material_Ext (item_uuid FK)
+### 複合主鍵（1個表）
 - Item_Document_xref (item_uuid, document_id)
+
+**說明**：Item_Equipment_Ext 和 Item_Material_Ext 雖然使用 item_uuid 作為主鍵，但不是複合主鍵，而是單一主鍵（同時也是外鍵）
 
 ---
 
@@ -803,10 +804,10 @@ WHERE a.deleted_at IS NULL;
 
 ## 📊 效能與擴展性
 
-### ✅ 優勢
+### ✅ 優���
 - 支援多層級 BOM 結構
 - BOM 版本控制（歷史追溯）
-- 擴展表減少 NULL 欄位
+- 擴展表減少 NULL 欄��
 - UUID 主鍵防止 ID 猜測
 - 完整的使用者管理系統
 - 軟刪除支援（deleted_at）
