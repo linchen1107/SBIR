@@ -8,16 +8,17 @@ OUTPUT_FILE = r'c:\github\SBIR\Database\docs\20-EMU3000系統\02-EMU3000_資料�
 
 # Regex Patterns
 # Item Line: 1 C147356/WU 1 Pee HOUSING C
-ITEM_PATTERN = re.compile(r'^(\d+)\s+([A-Z0-9/.-]+)\s+(\d+)\s+([A-Za-z]+)\s+(.+?)(?:\s+([A-Z]))?$')
+# Adjusted to be more flexible for PDF text extraction
+ITEM_PATTERN = re.compile(r'^(\d+)\s+([A-Z0-9/.-]+)\s+(\d+(?:\.\d+)?)\s+([A-Za-z]+)\s+(.+?)(?:\s+([A-Z]))?$')
 
-def find_pdf_files(root_dir):
-    pdf_files = []
+def find_source_files(root_dir):
+    source_files = []
     for root, dirs, files in os.walk(root_dir):
         if '原始資料' in root.split(os.sep):
             for file in files:
                 if file.lower().endswith('.pdf'):
-                    pdf_files.append(os.path.join(root, file))
-    return pdf_files
+                    source_files.append(os.path.join(root, file))
+    return source_files
 
 def parse_pdf(pdf_path):
     print(f"Parsing {os.path.basename(pdf_path)}...")
@@ -82,7 +83,7 @@ def parse_pdf(pdf_path):
     return items
 
 def generate_markdown(all_data):
-    md_content = "# EMU3000 維修物料清單預覽 (Source: PDF)\n\n"
+    md_content = "# EMU3000 維修物料清單預覽 (Source: PDF Only)\n\n"
     
     # Group by Maintenance Cycle (Folder Name)
     # File path: .../5年維護/01 .../原始資料/...
@@ -139,15 +140,15 @@ def generate_markdown(all_data):
     return md_content
 
 def main():
-    print("Scanning for PDF files...")
-    pdf_files = find_pdf_files(DATA_ROOT)
-    print(f"Found {len(pdf_files)} PDF files.")
+    print("Scanning for source files (PDF only)...")
+    source_files = find_source_files(DATA_ROOT)
+    print(f"Found {len(source_files)} source files.")
     
     all_data = {}
-    for pdf in pdf_files:
-        items = parse_pdf(pdf)
-        all_data[pdf] = items
-        print(f"  Extracted {len(items)} items.")
+    for file_path in source_files:
+        items = parse_pdf(file_path)
+        all_data[file_path] = items
+        print(f"  Extracted {len(items)} items from {os.path.basename(file_path)}")
         
     print("Generating Markdown...")
     md_content = generate_markdown(all_data)

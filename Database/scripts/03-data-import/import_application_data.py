@@ -1,353 +1,356 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Import application form data from export.jsonl to V3.0 database
+匯入 Application 資料到資料庫
+
+從 export.jsonl 檔案匯入資料到 sbir_equipment_db_v3.application 表
+處理欄位名稱映射與資料類型轉換
 """
+
 import json
 import psycopg2
-from psycopg2.extras import Json, RealDictCursor
+from psycopg2.extras import execute_values
 from datetime import datetime
-import uuid
+import sys
+import os
 
-# Database connection parameters
-DB_PARAMS = {
+# 資料庫連線設定
+DB_CONFIG = {
     'host': 'localhost',
     'port': 5432,
-    'database': 'sbir_equipment_db_v2',
+    'database': 'sbir_equipment_db_v3',
     'user': 'postgres',
-    'password': 'willlin07'
+    'password': 'willlin07',
+    'client_encoding': 'UTF8'
 }
 
-def get_db_connection():
-    """建立資料庫連線"""
-    return psycopg2.connect(**DB_PARAMS)
+# 欄位名稱映射（匯出資料 -> 目標表）
+FIELD_MAPPING = {
+    'created_at': 'date_created',
+    'updated_at': 'date_updated',
+    # 其他欄位名稱相同，不需要映射
+}
 
-def get_or_create_supplier(cursor, cage_code, name_zh, agent_name=None):
-    """取得或建立供應商"""
-    if not cage_code:
+# 需要排除的欄位（目標表中沒有，或自動生成）
+EXCLUDED_FIELDS = set()
+
+# 目標表的所有欄位（按順序）
+TARGET_FIELDS = [
+    'id', 'user_id', 'item_uuid', 'form_serial_number', 'part_number',
+    'english_name', 'chinese_name', 'inc_code', 'fiig_code',
+    'accounting_unit_code', 'issue_unit', 'unit_price', 'spec_indicator',
+    'unit_pack_quantity', 'storage_life_months', 'storage_life_action_code',
+    'storage_type_code', 'secrecy_code', 'expendability_code',
+    'repairability_code', 'manufacturability_code', 'source_code',
+    'category_code', 'system_code', 'pn_acquisition_level',
+    'pn_acquisition_source', 'manufacturer', 'part_number_reference',
+    'manufacturer_name', 'agent_name', 'ship_type', 'cid_no',
+    'model_type', 'equipment_name', 'usage_location', 'quantity_per_unit',
+    'mrc_data', 'document_reference', 'applicant_unit', 'contact_info',
+    'apply_date', 'official_nsn_stamp', 'official_nsn_final',
+    'nsn_filled_at', 'nsn_filled_by', 'status', 'sub_status',
+    'closed_at', 'closed_by', 'date_created', 'date_updated', 'deleted_at'
+]
+
+
+def connect_db():
+    """連接資料庫"""
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        print("[OK] 資料庫連線成功！")
+        return conn
+    except Exception as e:
+        print(f"[ERROR] 資料庫連線失敗: {e}")
+        sys.exit(1)
+
+
+def map_field_name(field_name):
+    """映射欄位名稱"""
+    return FIELD_MAPPING.get(field_name, field_name)
+
+
+def convert_value(field_name, value):
+    """轉換資料類型"""
+    # 處理 NULL 值
+    if value is None or value == '' or value == 'null':
         return None
 
-    # 查詢是否已存在
-    cursor.execute(
-        "SELECT supplier_id FROM Supplier WHERE cage_code = %s",
-        (cage_code,)
-    )
-    result = cursor.fetchone()
-
-    if result:
-        return result[0]
-
-    # 建立新供應商 (supplier_id 是 serial，不需要提供)
-    cursor.execute("""
-        INSERT INTO Supplier (cage_code, supplier_name_zh, supplier_name_en, supplier_code)
-        VALUES (%s, %s, %s, %s)
-        RETURNING supplier_id
-    """, (cage_code, name_zh or '', name_zh or '', cage_code))
-
-    return cursor.fetchone()[0]
-
-def determine_item_type(data):
-    """判斷物料類型 (FG/SEMI/RM)"""
-    # 如果有艦型、CID、裝備名稱等，視為 FG (成品)
-    if data.get('ship_type') or data.get('cid_no') or data.get('equipment_name'):
-        return 'FG'
-
-    # 如果有 INC/FIIG 碼，可能是 SEMI 或 RM
-    if data.get('inc_code') or data.get('fiig_code'):
-        # 根據 FSC (前4碼) 判斷
-        part_number = data.get('part_number', '')
-        if part_number and len(part_number) >= 4:
-            fsc = part_number[:4]
-            # 4xxx 系列通常是成品裝備
-            if fsc.startswith('4') or fsc.startswith('5') or fsc.startswith('6'):
-                return 'FG'
-        return 'RM'
-
-    return 'RM'
-
-def get_or_create_item(cursor, data, supplier_id):
-    """取得或建立 Item"""
-    part_number = data.get('part_number', '').strip()
-
-    if not part_number:
-        return None
-
-    # 查詢是否已存在（根據料號）
-    cursor.execute(
-        "SELECT item_uuid FROM Item WHERE item_code = %s",
-        (part_number,)
-    )
-    result = cursor.fetchone()
-
-    if result:
-        return result[0]
-
-    # 建立新 Item
-    item_uuid = str(uuid.uuid4())
-    item_type = determine_item_type(data)
-
-    cursor.execute("""
-        INSERT INTO Item (
-            item_uuid, item_code, item_name_en, item_name_zh,
-            item_type, status, date_created, date_updated
-        )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        RETURNING item_uuid
-    """, (
-        item_uuid,
-        part_number,
-        data.get('english_name', ''),
-        data.get('chinese_name', ''),
-        item_type,
-        'Active',
-        datetime.now(),
-        datetime.now()
-    ))
-
-    item_uuid = cursor.fetchone()[0]
-
-    # 根據類型建立延伸表
-    if item_type == 'FG':
-        create_equipment_ext(cursor, item_uuid, data)
-    else:
-        create_material_ext(cursor, item_uuid, data, supplier_id)
-
-    return item_uuid
-
-def create_equipment_ext(cursor, item_uuid, data):
-    """建立裝備延伸表資料"""
-    ship_type = data.get('ship_type', '')
-    cid_no = data.get('cid_no', '')
-
-    if not ship_type and not cid_no:
-        return
-
-    cursor.execute("""
-        INSERT INTO Item_Equipment_Ext (
-            item_uuid, ship_type, parent_cid, position,
-            parent_equipment_zh, parent_equipment_en, installation_qty
-        )
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
-        ON CONFLICT (item_uuid) DO NOTHING
-    """, (
-        item_uuid,
-        ship_type or None,
-        cid_no or None,
-        data.get('usage_location', '') or None,
-        data.get('equipment_name', '') or None,
-        data.get('english_name', '') or None,
-        data.get('quantity_per_unit') or None
-    ))
-
-def create_material_ext(cursor, item_uuid, data, supplier_id):
-    """建立物料延伸表資料"""
-    # 提取 NSN（如果有的話）
-    nsn = None
-    official_nsn = data.get('official_nsn_final', '')
-    if official_nsn and len(official_nsn) >= 13:
-        nsn = official_nsn
-
-    unit_price = data.get('unit_price')
-    if unit_price:
+    # 轉換 usage_location 為整數
+    if field_name == 'usage_location':
         try:
-            unit_price = float(unit_price)
+            return int(value) if value else None
         except (ValueError, TypeError):
-            unit_price = None
+            return None
 
-    cursor.execute("""
-        INSERT INTO Item_Material_Ext (
-            item_uuid, nsn, accounting_code, fiig, unit_price_usd,
-            issue_unit, spec_indicator
-        )
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
-        ON CONFLICT (item_uuid) DO NOTHING
-    """, (
-        item_uuid,
-        nsn or None,
-        data.get('inc_code', '') or data.get('accounting_unit_code', '') or None,
-        data.get('fiig_code', '') or None,
-        unit_price,
-        data.get('issue_unit', '') or None,
-        data.get('spec_indicator', '') or None
-    ))
+    # 處理 quantity_per_unit（JSON 類型）
+    if field_name == 'quantity_per_unit':
+        if value is None or value == '':
+            return None
+        # 如果是數字，轉成 JSON 格式
+        if isinstance(value, (int, float)):
+            return json.dumps(value)
+        # 如果已經是 JSON 字串，直接返回
+        if isinstance(value, str):
+            try:
+                json.loads(value)
+                return value
+            except:
+                # 嘗試轉換為數字再轉 JSON
+                try:
+                    return json.dumps(int(value))
+                except:
+                    return None
+        return None
 
-def create_mrc_data(cursor, item_uuid, mrc_data):
-    """建立 MRC 規格資料"""
-    if not mrc_data or not isinstance(mrc_data, list):
-        return
+    # 處理 JSON 欄位（mrc_data）
+    if field_name == 'mrc_data':
+        if isinstance(value, (list, dict)):
+            return json.dumps(value, ensure_ascii=False)
+        elif isinstance(value, str):
+            try:
+                # 驗證是否為有效 JSON
+                json.loads(value)
+                return value
+            except:
+                return None
+        return None
 
-    # 先刪除舊的 MRC 資料（如果存在）
-    cursor.execute("DELETE FROM MRC WHERE item_uuid = %s", (item_uuid,))
+    # 處理時間戳記
+    if field_name in ['date_created', 'date_updated', 'nsn_filled_at', 'closed_at', 'deleted_at']:
+        if isinstance(value, str):
+            try:
+                # 移除時區資訊（PostgreSQL timestamp without time zone）
+                if 'T' in value:
+                    value = value.replace('T', ' ')
+                if '+' in value:
+                    value = value.split('+')[0]
+                return value
+            except:
+                return None
+        return value
 
-    for mrc in mrc_data:
-        mrc_code = mrc.get('mrc_code', '')
-        if not mrc_code:
+    # 處理 UUID
+    if field_name in ['id', 'user_id', 'item_uuid', 'nsn_filled_by', 'closed_by']:
+        if value and value != '':
+            return str(value)
+        return None
+
+    # 處理數值
+    if field_name == 'unit_price':
+        try:
+            return float(value) if value else None
+        except (ValueError, TypeError):
+            return None
+
+    # 處理日期
+    if field_name == 'apply_date':
+        if isinstance(value, str) and value:
+            try:
+                # 轉換為日期格式
+                return value.split('T')[0] if 'T' in value else value
+            except:
+                return None
+        return None
+
+    # 其他欄位保持原樣
+    return value
+
+
+def process_record(record):
+    """處理單一記錄"""
+    processed = {}
+
+    for src_field, value in record.items():
+        # 映射欄位名稱
+        target_field = map_field_name(src_field)
+
+        # 跳過排除的欄位
+        if target_field in EXCLUDED_FIELDS:
             continue
 
-        sort_order = mrc.get('sort_order', 0)
+        # 跳過不在目標表中的欄位
+        if target_field not in TARGET_FIELDS:
+            continue
 
-        # mrc_uuid 是 UUID，會自動生成
-        # spec_no 是 integer，spec_abbr 才是存放 MRC code 的欄位
-        cursor.execute("""
-            INSERT INTO MRC (
-                item_uuid, spec_no, spec_abbr,
-                spec_en, spec_zh,
-                answer_en, answer_zh
-            )
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (
-            item_uuid,
-            sort_order if sort_order else None,
-            mrc_code,
-            mrc.get('mrc_name_en', ''),
-            mrc.get('mrc_name_zh', ''),
-            mrc.get('mrc_value_en', ''),
-            mrc.get('mrc_value_zh', '')
-        ))
+        # 轉換資料類型
+        processed[target_field] = convert_value(target_field, value)
 
-def create_part_number_xref(cursor, item_uuid, supplier_id, part_number_ref):
-    """建立料號交叉參照"""
-    if not supplier_id or not part_number_ref:
+    # 確保 item_uuid 欄位存在（可能為 NULL）
+    if 'item_uuid' not in processed:
+        processed['item_uuid'] = None
+
+    return processed
+
+
+def get_existing_user_ids(conn):
+    """取得資料庫中存在的 user_id"""
+    cursor = conn.cursor()
+    cursor.execute('SELECT id FROM "User"')
+    user_ids = {str(row[0]) for row in cursor.fetchall()}
+    cursor.close()
+    return user_ids
+
+
+def import_from_jsonl(file_path, conn):
+    """從 JSONL 檔案匯入資料"""
+    print(f"\n開始讀取檔案: {file_path}")
+
+    if not os.path.exists(file_path):
+        print(f"[ERROR] 檔案不存在: {file_path}")
         return
 
-    # 檢查是否已存在
-    cursor.execute("""
-        SELECT 1 FROM Part_Number_xref
-        WHERE item_uuid = %s AND supplier_id = %s AND part_number = %s
-    """, (item_uuid, supplier_id, part_number_ref))
+    # 取得現有的 user_id
+    existing_user_ids = get_existing_user_ids(conn)
+    print(f"[OK] 找到 {len(existing_user_ids)} 個現有使用者")
 
-    if cursor.fetchone():
+    records = []
+    skipped = 0
+
+    # 讀取 JSONL 檔案
+    with open(file_path, 'r', encoding='utf-8') as f:
+        for line_no, line in enumerate(f, 1):
+            line = line.strip()
+            if not line:
+                continue
+
+            try:
+                data = json.loads(line)
+
+                # 檢查是否為正確格式
+                if 'table' not in data or 'data' not in data:
+                    print(f"[WARN] 第 {line_no} 行：格式錯誤，跳過")
+                    skipped += 1
+                    continue
+
+                # 只處理 applications 表的資料
+                if 'applications' not in data['table'].lower():
+                    continue
+
+                # 處理記錄
+                record = process_record(data['data'])
+                records.append(record)
+
+            except json.JSONDecodeError as e:
+                print(f"[WARN] 第 {line_no} 行：JSON 解析錯誤，跳過 - {e}")
+                skipped += 1
+                continue
+            except Exception as e:
+                print(f"[WARN] 第 {line_no} 行：處理錯誤，跳過 - {e}")
+                skipped += 1
+                continue
+
+    print(f"[OK] 讀取完成：共 {len(records)} 筆記錄，跳過 {skipped} 筆")
+
+    if not records:
+        print("沒有資料需要匯入")
         return
 
-    # part_number_id 是 serial，不需要提供
-    cursor.execute("""
-        INSERT INTO Part_Number_xref (
-            item_uuid, supplier_id, part_number,
-            is_primary, date_created
-        )
-        VALUES (%s, %s, %s, %s, %s)
-    """, (
-        item_uuid,
-        supplier_id,
-        part_number_ref,
-        True,
-        datetime.now()
-    ))
+    # 匯入資料
+    print(f"\n開始匯入資料...")
+    imported = 0
+    failed = 0
+    cursor = conn.cursor()
 
-def create_application_form(cursor, data, item_uuid):
-    """建立申編單"""
-    form_no = data.get('form_serial_number', '')
+    for i, record in enumerate(records, 1):
+        try:
+            # 檢查並處理所有 User 外鍵約束
+            user_fk_fields = ['user_id', 'nsn_filled_by', 'closed_by']
+            for fk_field in user_fk_fields:
+                if fk_field in record and record[fk_field]:
+                    if record[fk_field] not in existing_user_ids:
+                        print(f"[WARN] 第 {i} 筆：{fk_field} {record[fk_field]} 不存在，設為 NULL")
+                        record[fk_field] = None
 
-    if not form_no:
-        return None
+            # 建立 INSERT 語句
+            fields = list(record.keys())
+            placeholders = ', '.join(['%s'] * len(fields))
+            field_names = ', '.join([f'"{f}"' for f in fields])
 
-    # 檢查是否已存在
-    cursor.execute(
-        "SELECT form_id FROM ApplicationForm WHERE form_no = %s",
-        (form_no,)
-    )
-    result = cursor.fetchone()
+            sql = f"""
+                INSERT INTO application ({field_names})
+                VALUES ({placeholders})
+                ON CONFLICT (id) DO UPDATE SET
+                    {', '.join([f'"{f}" = EXCLUDED."{f}"' for f in fields if f != 'id'])}
+            """
 
-    if result:
-        return result[0]
+            values = [record[f] for f in fields]
+            cursor.execute(sql, values)
 
-    # 建立新申編單
-    cursor.execute("""
-        INSERT INTO ApplicationForm (
-            form_no, submit_status, yetl,
-            applicant_accounting_code, item_id,
-            created_date, updated_date
-        )
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
-        RETURNING form_id
-    """, (
-        form_no,
-        data.get('status', 'pending'),
-        data.get('part_number', ''),
-        data.get('accounting_unit_code', ''),
-        item_uuid,
-        datetime.now().date(),
-        datetime.now().date()
-    ))
+            imported += 1
 
-    return cursor.fetchone()[0]
+            if i % 10 == 0:
+                print(f"  已處理 {i}/{len(records)} 筆...")
+                conn.commit()
 
-def import_record(cursor, record_data):
-    """匯入單筆記錄"""
-    data = record_data.get('data', {})
+        except Exception as e:
+            print(f"[ERROR] 第 {i} 筆匯入失敗: {e}")
+            print(f"  ID: {record.get('id', 'N/A')}")
 
-    # 1. 建立或取得供應商
-    supplier_id = get_or_create_supplier(
-        cursor,
-        data.get('manufacturer'),
-        data.get('manufacturer_name'),
-        data.get('agent_name')
-    )
+            # 檢查字串長度超過限制的欄位
+            varchar_255_fields = ['english_name', 'chinese_name', 'manufacturer',
+                                 'part_number_reference', 'manufacturer_name',
+                                 'model_type', 'equipment_name', 'mrc_data', 'document_reference']
 
-    # 2. 建立或取得 Item
-    item_uuid = get_or_create_item(cursor, data, supplier_id)
+            for field in varchar_255_fields:
+                if field in record and record[field]:
+                    val = str(record[field])
+                    if len(val) > 255:
+                        print(f"  [!] {field}: 長度={len(val)} (超過255)")
+                        print(f"      內容預覽: {val[:100]}...")
 
-    if not item_uuid:
-        print(f"[SKIP] {data.get('form_serial_number')} (no part number)")
-        return
+            failed += 1
+            conn.rollback()
 
-    # 3. 建立 MRC 資料
-    mrc_data = data.get('mrc_data')
-    if mrc_data:
-        create_mrc_data(cursor, item_uuid, mrc_data)
+    # 最後提交
+    conn.commit()
+    cursor.close()
 
-    # 4. 建立料號交叉參照
-    part_number_ref = data.get('part_number_reference')
-    if supplier_id and part_number_ref:
-        create_part_number_xref(cursor, item_uuid, supplier_id, part_number_ref)
+    print(f"\n[OK] 匯入完成！")
+    print(f"  成功: {imported} 筆")
+    print(f"  失敗: {failed} 筆")
 
-    # 5. 建立申編單
-    form_id = create_application_form(cursor, data, item_uuid)
-
-    print(f"[OK] {data.get('form_serial_number')} - {data.get('part_number')} - {data.get('chinese_name')}")
 
 def main():
     """主程式"""
-    import_file = 'c:/github/SBIR/Database/export/export.jsonl'
+    print("=" * 60)
+    print("Application 資料匯入工具")
+    print("=" * 60)
 
-    print(f"開始匯入料號申編單資料...")
-    print(f"來源檔案: {import_file}")
-    print("-" * 80)
-
-    conn = get_db_connection()
-    conn.set_client_encoding('UTF8')
-    cursor = conn.cursor()
-
-    imported_count = 0
-    error_count = 0
+    # 連接資料庫
+    conn = connect_db()
 
     try:
-        with open(import_file, 'r', encoding='utf-8') as f:
-            for line_num, line in enumerate(f, 1):
-                try:
-                    record = json.loads(line.strip())
-                    import_record(cursor, record)
-                    imported_count += 1
-                except Exception as e:
-                    error_count += 1
-                    print(f"[ERROR] Line {line_num}: {e}")
-                    conn.rollback()
-                    cursor = conn.cursor()  # 重新建立 cursor
+        # 匯入 JSONL 資料
+        jsonl_path = r'c:/github/SBIR/Database/export/export.jsonl'
+        import_from_jsonl(jsonl_path, conn)
 
-        # 提交變更
-        conn.commit()
-        print("-" * 80)
-        print(f"[SUCCESS] Import completed!")
-        print(f"  Success: {imported_count} records")
-        print(f"  Failed: {error_count} records")
+        # 顯示統計資訊
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM application")
+        total = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM application WHERE deleted_at IS NULL")
+        active = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM application WHERE deleted_at IS NOT NULL")
+        deleted = cursor.fetchone()[0]
+
+        cursor.close()
+
+        print(f"\n資料庫統計：")
+        print(f"  總記錄數: {total}")
+        print(f"  有效記錄: {active}")
+        print(f"  已刪除: {deleted}")
 
     except Exception as e:
-        conn.rollback()
-        print(f"[ERROR] Import failed: {e}")
-        raise
+        print(f"\n[ERROR] 匯入過程發生錯誤: {e}")
+        import traceback
+        traceback.print_exc()
+
     finally:
-        cursor.close()
         conn.close()
+        print("\n資料庫連線已關閉")
+
 
 if __name__ == '__main__':
     main()
