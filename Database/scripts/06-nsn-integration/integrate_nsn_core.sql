@@ -303,7 +303,7 @@ DECLARE
 BEGIN
     SELECT COUNT(*) INTO table_count
     FROM information_schema.tables
-    WHERE table_schema = 'public'
+    WHERE table_schema = 'web_app'
     AND table_name LIKE 'nsn_%';
 
     RAISE NOTICE '=========================================';
