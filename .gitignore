@@ -46,3 +46,5 @@ temp/
 # claude
 .claude/
 settings.local.json
+sql/data_import/14_import_fiig_inc_mrc_xref.sql
+sql/raw_data/fiig_inc_mrc_xref/Tabl120.TXT
