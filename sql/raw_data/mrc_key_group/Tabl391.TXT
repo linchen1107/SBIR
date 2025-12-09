@@ -1,0 +1,19 @@
+01|Color               
+02|Design              
+03|Designator          
+04|Dimensions          
+05|Directional         
+06|Heat Treatment      
+07|Indicator           
+08|Location            
+09|Material            
+10|Measurement         
+11|Method              
+12|Quantity            
+13|Screw Thread        
+14|Shape               
+15|Standard            
+16|Style               
+17|Surface Treatment   
+18|Type                
+19|Miscellaneous       
