@@ -1,0 +1,29 @@
+﻿========================================
+Data Comparison Report
+Generated: 2025-12-26 02:17:51
+========================================
+
+USERS:
+  SQL File:       9 records
+  Database:       0 records
+  Status:         MISMATCH
+
+APPLICATIONS:
+  SQL File:       126 records
+  old_data:       126 records
+  web_app:        126 records
+  Status:         ALL MATCH
+
+MIGRATION STATUS:
+  old_data -> web_app:  COMPLETE
+  SQL -> old_data:      COMPLETE
+
+OVERALL STATUS:
+  DATA MISMATCH DETECTED
+
+Files Generated:
+  - C:\github\SBIR\Database\migrations\db_users_data.txt
+  - C:\github\SBIR\Database\migrations\db_olddata_applications.txt
+  - C:\github\SBIR\Database\migrations\db_webapp_applications.txt
+
+========================================

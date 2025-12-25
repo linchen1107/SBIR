@@ -1,0 +1,9 @@
+﻿22c41871-d829-42a7-bb25-2f8d9c685206|C112118237|c112118237@nkust.edu.tw|admin|Z|||||true|false|2025-08-08 21:41:03.522199|2025-12-26 01:46:41.219006
+456c7b72-f46e-4f80-8fb0-f97f9067fe15|chaohui|chaohui@nkust.edu.tw|user|O|||||true|false|2025-08-13 14:31:00.756567|2025-08-13 14:31:25.346214
+52f75578-9694-4a42-bdcd-a92a34377d25|test1111|fafa@gmail.com|user|X|||||true|false|2025-08-20 14:00:51.790096|2025-12-26 01:46:41.219006
+5b6ae802-c11f-4bc5-8b8f-ff0e4958bd45|ChenTsungLung|yosafireandfroze@gmail.com|user|D|||||false|false|2025-08-11 01:33:56.784769|2025-10-30 14:00:35.173692
+89ca46fa-906e-4272-b1d3-134c4f554778|Zi_Ching|chingluo9999@gmail.com|user|A|||||true|false|2025-08-11 01:52:36.154422|2025-12-26 01:46:41.219006
+9c27fb8f-dd14-41c0-9d48-99759f8477b8|tim|timguanzhi@gmail.com|user|B|||||false|false|2025-08-11 01:54:07.243325|2025-10-30 14:00:20.509356
+9ea5354f-9b4a-4118-9c7d-3deb1e7b98f6|yjjchen|yjjchen@nkust.edu.tw|user|Y|||||true|false|2025-08-09 03:21:36.010172|2025-08-09 03:21:50.859189
+e5aebccb-5a8a-40c6-b919-77cb51655f8f|jonaschiu|jonaschiu0809@outlook.com|user|J|||||false|false|2025-08-14 10:10:19.641031|2025-10-30 14:00:47.228231
+ede1c9e4-06d1-4fe2-ae69-ece082b67e46|yuan6112|yuan6112@sh-logistics.com.tw|user|C|||||true|false|2025-08-11 01:48:09.724885|2025-12-26 01:46:41.219006

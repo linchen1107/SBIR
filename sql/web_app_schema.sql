@@ -46,7 +46,7 @@ $$;
 --
 -- Table structure for table system_settings
 --
-CREATE TABLE web_app.system_settings (
+-- CREATE TABLE web_app.system_settings (
     setting_id UUID NOT NULL DEFAULT uuid_generate_v7(),
     setting_key VARCHAR(100) NOT NULL,
     setting_value TEXT,
@@ -63,7 +63,7 @@ CREATE UNIQUE INDEX ix_web_app_system_settings_setting_key ON web_app.system_set
 --
 -- Table structure for table system_statistics
 --
-CREATE TABLE web_app.system_statistics (
+-- CREATE TABLE web_app.system_statistics (
     stat_id UUID NOT NULL DEFAULT uuid_generate_v7(),
     stat_date DATE NOT NULL,
     total_users INTEGER,
@@ -202,7 +202,7 @@ CREATE INDEX ix_web_app_audit_logs_user_id ON web_app.audit_logs (user_id);
 --
 -- Table structure for table search_history
 --
-CREATE TABLE web_app.search_history (
+-- CREATE TABLE web_app.search_history (
     search_id UUID NOT NULL DEFAULT uuid_generate_v7(),
     user_id UUID,
     session_id VARCHAR(255),
@@ -224,7 +224,7 @@ CREATE INDEX ix_web_app_search_history_user_id ON web_app.search_history (user_i
 --
 -- Table structure for table user_favorites
 --
-CREATE TABLE web_app.user_favorites (
+-- CREATE TABLE web_app.user_favorites (
     favorite_id UUID NOT NULL DEFAULT uuid_generate_v7(),
     user_id UUID NOT NULL,
     item_type VARCHAR(50) NOT NULL,
@@ -263,7 +263,7 @@ CREATE INDEX ix_web_app_user_sessions_user_id ON web_app.user_sessions (user_id)
 --
 -- Table structure for table user_settings
 --
-CREATE TABLE web_app.user_settings (
+-- CREATE TABLE web_app.user_settings (
     setting_id UUID NOT NULL DEFAULT uuid_generate_v7(),
     user_id UUID NOT NULL,
     setting_key VARCHAR(100) NOT NULL,

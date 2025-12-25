@@ -1,0 +1,9 @@
+﻿22c41871-d829-42a7-bb25-2f8d9c685206|C112118237|c112118237@nkust.edu.tw|admin|Z
+456c7b72-f46e-4f80-8fb0-f97f9067fe15|chaohui|chaohui@nkust.edu.tw|user|O
+52f75578-9694-4a42-bdcd-a92a34377d25|test1111|fafa@gmail.com|user|X
+5b6ae802-c11f-4bc5-8b8f-ff0e4958bd45|ChenTsungLung|yosafireandfroze@gmail.com|user|D
+89ca46fa-906e-4272-b1d3-134c4f554778|Zi_Ching|chingluo9999@gmail.com|user|A
+9c27fb8f-dd14-41c0-9d48-99759f8477b8|tim|timguanzhi@gmail.com|user|B
+9ea5354f-9b4a-4118-9c7d-3deb1e7b98f6|yjjchen|yjjchen@nkust.edu.tw|user|Y
+e5aebccb-5a8a-40c6-b919-77cb51655f8f|jonaschiu|jonaschiu0809@outlook.com|user|J
+ede1c9e4-06d1-4fe2-ae69-ece082b67e46|yuan6112|yuan6112@sh-logistics.com.tw|user|C
