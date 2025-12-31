@@ -1,0 +1,346 @@
+"schema_name","table_name","column_order","column_name","data_type","column_comment"
+web_app,User,1,id,uuid,使用者UUID（主鍵）
+web_app,User,2,username,character varying(80),使用者帳號
+web_app,User,3,email,character varying(120),電子郵件
+web_app,User,4,password_hash,character varying(256),密碼雜湊值
+web_app,User,5,english_code,character varying(10),
+web_app,User,6,full_name,character varying(100),
+web_app,User,7,department,character varying(100),
+web_app,User,8,position,character varying(100),
+web_app,User,9,phone,character varying(20),
+web_app,User,10,role,character varying(50),角色權限（admin/user/viewer等）
+web_app,User,11,is_active,boolean,帳號啟用狀態
+web_app,User,12,is_verified,boolean,電子郵件驗證狀態
+web_app,User,13,email_verified_at,timestamp without time zone,
+web_app,User,14,last_login_at,timestamp without time zone,
+web_app,User,15,failed_login_attempts,integer,
+web_app,User,16,locked_until,timestamp without time zone,
+web_app,User,17,date_created,timestamp without time zone,
+web_app,User,18,date_updated,timestamp without time zone,
+web_app,User_email_key,1,email,character varying(120),
+web_app,User_pkey,1,id,uuid,
+web_app,User_username_key,1,username,character varying(80),
+web_app,application,1,id,uuid,申編單UUID（主鍵）
+web_app,application,2,user_id,uuid,申請人（外鍵至User表）
+web_app,application,3,item_uuid,uuid,關聯的品項UUID（外鍵至Item表）
+web_app,application,50,date_created,timestamp without time zone,
+web_app,application,51,date_updated,timestamp without time zone,
+web_app,application,52,deleted_at,timestamp without time zone,軟刪除時間戳
+web_app,application,53,form_serial_number,character varying(50),
+web_app,application,54,system_code,character varying(100),
+web_app,application,55,mrc_data,json,
+web_app,application,56,applicant_unit,character varying(100),
+web_app,application,57,contact_info,character varying(100),
+web_app,application,58,apply_date,date,
+web_app,application,59,official_nsn_stamp,character varying(10),
+web_app,application,60,official_nsn_final,character varying(20),
+web_app,application,61,nsn_filled_at,timestamp without time zone,
+web_app,application,62,closed_at,timestamp without time zone,
+web_app,application,63,status,character varying(50),
+web_app,application,64,sub_status,character varying(50),
+web_app,application,67,nsn_filled_by,uuid,
+web_app,application,68,closed_by,uuid,
+web_app,application_pkey,1,id,uuid,
+web_app,application_suppliercode,1,application_uuid,uuid,申請單UUID
+web_app,application_suppliercode,2,form_no,character varying(50),流水號
+web_app,application_suppliercode,3,applicant,character varying(50),
+web_app,application_suppliercode,4,supplier_id,integer,
+web_app,application_suppliercode,5,supplier_name,character varying(200),
+web_app,application_suppliercode,6,address,character varying(200),
+web_app,application_suppliercode,7,phone,character varying(50),
+web_app,application_suppliercode,8,business_items,character varying(200),
+web_app,application_suppliercode,9,supplier_code,character varying(20),
+web_app,application_suppliercode,10,equipment_name,character varying(200),
+web_app,application_suppliercode,11,custom_fields,jsonb,自定義欄位（JSONB）
+web_app,application_suppliercode,12,status,character varying(20),
+web_app,application_suppliercode,13,date_created,timestamp without time zone,
+web_app,application_suppliercode,14,date_updated,timestamp without time zone,
+web_app,applicationattachment,1,id,uuid,
+web_app,applicationattachment,2,application_id,uuid,
+web_app,applicationattachment,3,user_id,uuid,
+web_app,applicationattachment,4,file_data,bytea,檔案二進制資料（BYTEA）
+web_app,applicationattachment,5,filename,character varying(255),儲存檔名
+web_app,applicationattachment,6,original_filename,character varying(255),原始檔名
+web_app,applicationattachment,7,mimetype,character varying(100),
+web_app,applicationattachment,8,file_type,character varying(20),
+web_app,applicationattachment,9,page_selection,character varying(200),
+web_app,applicationattachment,10,sort_order,integer,
+web_app,applicationattachment,11,date_created,timestamp without time zone,
+web_app,applicationattachment,12,date_updated,timestamp without time zone,
+web_app,applicationattachment_pkey,1,id,uuid,
+web_app,applicationlog,1,log_id,uuid,
+web_app,applicationlog,2,timestamp,timestamp with time zone,日誌時間戳（TIMESTAMPTZ）
+web_app,applicationlog,3,level,character varying(10),
+web_app,applicationlog,4,logger,character varying(100),
+web_app,applicationlog,5,message,text,
+web_app,applicationlog,6,request_id,character varying(36),
+web_app,applicationlog,7,method,character varying(10),
+web_app,applicationlog,8,path,character varying(500),
+web_app,applicationlog,9,status_code,integer,
+web_app,applicationlog,10,elapsed_time_ms,"numeric(10,2)",請求處理時間（毫秒）
+web_app,applicationlog,11,user_id,uuid,
+web_app,applicationlog,12,remote_addr,inet,
+web_app,applicationlog,13,user_agent,text,
+web_app,applicationlog,14,module,character varying(100),
+web_app,applicationlog,15,function,character varying(100),
+web_app,applicationlog,16,line,integer,
+web_app,applicationlog,17,exception_type,character varying(100),
+web_app,applicationlog,18,exception_message,text,
+web_app,applicationlog,19,exception_traceback,jsonb,異常堆疊追蹤（JSONB）
+web_app,applicationlog,20,extra_fields,jsonb,
+web_app,applicationlog,21,created_date,date,
+web_app,applicationlog_pkey,1,log_id,uuid,
+web_app,auditlog,1,log_id,uuid,
+web_app,auditlog,2,user_id,uuid,
+web_app,auditlog,3,action,character varying(100),操作動作（CREATE/UPDATE/DELETE等）
+web_app,auditlog,4,resource_type,character varying(50),資源類型（Application/Item等）
+web_app,auditlog,5,resource_id,character varying(100),
+web_app,auditlog,6,old_values,json,修改前舊值（JSON）
+web_app,auditlog,7,new_values,json,修改後新值（JSON）
+web_app,auditlog,8,ip_address,character varying(45),
+web_app,auditlog,9,user_agent,text,
+web_app,auditlog,10,success,boolean,
+web_app,auditlog,11,error_message,text,
+web_app,auditlog,12,date_created,timestamp without time zone,
+web_app,auditlog_pkey,1,log_id,uuid,
+web_app,bom,1,bom_uuid,uuid,BOM UUID
+web_app,bom,2,item_uuid,uuid,成品料號UUID
+web_app,bom,3,bom_code,character varying(50),BOM編號
+web_app,bom,4,revision,character varying(20),版次
+web_app,bom,5,effective_from,date,生效日
+web_app,bom,6,effective_to,date,失效日
+web_app,bom,7,status,character varying(20),狀態：Released/Draft
+web_app,bom,8,remark,text,備註
+web_app,bom,9,date_created,timestamp without time zone,
+web_app,bom,10,date_updated,timestamp without time zone,
+web_app,bom_line,1,line_uuid,uuid,行UUID
+web_app,bom_line,2,bom_uuid,uuid,BOM UUID
+web_app,bom_line,3,line_no,character varying(50),行號
+web_app,bom_line,4,component_item_uuid,uuid,元件料號UUID
+web_app,bom_line,5,qty_per,"numeric(10,4)",單位用量
+web_app,bom_line,6,scrap_type,character varying(20),損耗型態
+web_app,bom_line,7,scrap_rate,"numeric(5,4)",損耗率
+web_app,bom_line,8,uom,character varying(10),用量單位
+web_app,bom_line,9,position,character varying(100),裝配位置
+web_app,bom_line,10,remark,text,備註
+web_app,bom_line,11,date_created,timestamp without time zone,
+web_app,bom_line,12,date_updated,timestamp without time zone,
+web_app,bom_line_pkey,1,line_uuid,uuid,
+web_app,bom_pkey,1,bom_uuid,uuid,
+web_app,cidapplication,1,application_uuid,uuid,申請單UUID
+web_app,cidapplication,2,form_no,character varying(50),流水號
+web_app,cidapplication,3,applicant,character varying(50),
+web_app,cidapplication,4,item_uuid,uuid,
+web_app,cidapplication,5,suggested_prefix,character varying(2),建議前兩碼
+web_app,cidapplication,6,approved_cid,character varying(50),核定CID
+web_app,cidapplication,7,equipment_name_zh,character varying(100),
+web_app,cidapplication,8,equipment_name_en,character varying(200),
+web_app,cidapplication,9,supplier_code,character varying(20),
+web_app,cidapplication,10,part_number,character varying(50),
+web_app,cidapplication,11,status,character varying(20),
+web_app,cidapplication,12,date_created,timestamp without time zone,
+web_app,cidapplication,13,date_updated,timestamp without time zone,
+web_app,cidapplication_form_no_key,1,form_no,character varying(50),
+web_app,cidapplication_pkey,1,application_uuid,uuid,
+web_app,idx_app_date_created,1,date_created,timestamp without time zone,
+web_app,idx_app_deleted_at,1,deleted_at,timestamp without time zone,
+web_app,idx_app_item_uuid,1,item_uuid,uuid,
+web_app,idx_app_log_created_date_timestamp,1,created_date,date,
+web_app,idx_app_log_created_date_timestamp,2,timestamp,timestamp with time zone,
+web_app,idx_app_log_level,1,level,character varying(10),
+web_app,idx_app_log_timestamp,1,timestamp,timestamp with time zone,
+web_app,idx_app_log_user_id,1,user_id,uuid,
+web_app,idx_app_status,1,status,character varying(50),
+web_app,idx_app_user_id,1,user_id,uuid,
+web_app,idx_attachment_app_id,1,application_id,uuid,
+web_app,idx_attachment_type,1,file_type,character varying(20),
+web_app,idx_attachment_user_id,1,user_id,uuid,
+web_app,idx_audit_action,1,action,character varying(100),
+web_app,idx_audit_date_created,1,date_created,timestamp without time zone,
+web_app,idx_audit_resource,1,resource_type,character varying(50),
+web_app,idx_audit_resource,2,resource_id,character varying(100),
+web_app,idx_audit_user_id,1,user_id,uuid,
+web_app,idx_bom_effective,1,effective_from,date,
+web_app,idx_bom_effective,2,effective_to,date,
+web_app,idx_bom_item,1,item_uuid,uuid,
+web_app,idx_bom_line_bom,1,bom_uuid,uuid,
+web_app,idx_bom_line_component,1,component_item_uuid,uuid,
+web_app,idx_bom_status,1,status,character varying(20),
+web_app,idx_cid_app_form_no,1,form_no,character varying(50),
+web_app,idx_emu3000_item_uuid,1,item_uuid,uuid,
+web_app,idx_equip_ext_eswbs,1,eswbs_code,character varying(20),
+web_app,idx_equip_ext_ship_type,1,ship_type,character varying(50),
+web_app,idx_item_code,1,item_code,character varying(50),
+web_app,idx_item_status,1,status,character varying(20),
+web_app,idx_item_type,1,item_type,character varying(10),
+web_app,idx_material_ext_accounting_unit_code,1,accounting_code,character varying(20),
+web_app,idx_material_ext_category_code,1,item_category,character varying(10),
+web_app,idx_material_ext_nsn,1,nsn,character varying(20),
+web_app,idx_mrc_abbr,1,spec_abbr,character varying(20),
+web_app,idx_mrc_item,1,item_uuid,uuid,
+web_app,idx_part_item,1,item_uuid,uuid,
+web_app,idx_part_number,1,part_number,character varying(50),
+web_app,idx_part_supplier,1,supplier_id,integer,
+web_app,idx_session_expires_at,1,expires_at,timestamp without time zone,
+web_app,idx_session_is_active,1,is_active,boolean,
+web_app,idx_session_user_id,1,user_id,uuid,
+web_app,idx_supplier_app_form_no,1,form_no,character varying(50),
+web_app,idx_supplier_cage,1,cage_code,character varying(20),
+web_app,idx_supplier_code,1,supplier_code,character varying(20),
+web_app,idx_tech_doc_eswbs,1,eswbs_code,character varying(20),
+web_app,idx_user_email,1,email,character varying(120),
+web_app,idx_user_is_active,1,is_active,boolean,
+web_app,idx_user_role,1,role,character varying(50),
+web_app,idx_user_username,1,username,character varying(80),
+web_app,item,1,item_uuid,uuid,品項UUID（主鍵）
+web_app,item,2,item_code,character varying(50),統一識別碼（CID或NIIN）
+web_app,item,3,item_name_zh,character varying(100),中文品名
+web_app,item,4,item_name_en,character varying(200),英文品名
+web_app,item,5,item_type,character varying(10),品項類型：FG(成品)/SEMI(半成品)/RM(原物料)
+web_app,item,6,uom,character varying(10),基本計量單位
+web_app,item,7,status,character varying(20),狀態：Active/Inactive
+web_app,item,8,date_created,timestamp without time zone,
+web_app,item,9,date_updated,timestamp without time zone,
+web_app,item_document_xref,1,item_uuid,uuid,
+web_app,item_document_xref,2,document_id,integer,
+web_app,item_document_xref,3,date_created,timestamp without time zone,
+web_app,item_document_xref,4,date_updated,timestamp without time zone,
+web_app,item_document_xref_pkey,1,item_uuid,uuid,
+web_app,item_document_xref_pkey,2,document_id,integer,
+web_app,item_emu3000_maintenance_ext,1,ext_uuid,uuid,
+web_app,item_emu3000_maintenance_ext,2,item_uuid,uuid,
+web_app,item_emu3000_maintenance_ext,3,part,character varying(255),
+web_app,item_emu3000_maintenance_ext,4,quantity,"numeric(10,4)",
+web_app,item_emu3000_maintenance_ext,5,unit,character varying(50),
+web_app,item_emu3000_maintenance_ext,6,name,character varying(255),
+web_app,item_emu3000_maintenance_ext,7,wec,character varying(100),
+web_app,item_emu3000_maintenance_ext,8,notes,text,
+web_app,item_emu3000_maintenance_ext,9,kit_no,character varying(100),
+web_app,item_emu3000_maintenance_ext,10,date_created,timestamp without time zone,
+web_app,item_emu3000_maintenance_ext,11,date_updated,timestamp without time zone,
+web_app,item_emu3000_maintenance_ext_pkey,1,ext_uuid,uuid,
+web_app,item_equipment_ext,1,item_uuid,uuid,品項UUID
+web_app,item_equipment_ext,2,equipment_type,character varying(50),裝備形式（裝備型號/型式）
+web_app,item_equipment_ext,3,ship_type,character varying(50),艦型
+web_app,item_equipment_ext,4,usage_location,character varying(100),裝設地點（安裝位置）
+web_app,item_equipment_ext,5,parent_equipment_zh,character varying(100),上層適用裝備中文名稱
+web_app,item_equipment_ext,6,parent_equipment_en,character varying(200),上層適用裝備英文名稱
+web_app,item_equipment_ext,7,parent_cid,character varying(50),上層適用裝備CID
+web_app,item_equipment_ext,8,eswbs_code,character varying(20),族群結構碼HSC（ESWBS五碼）
+web_app,item_equipment_ext,9,system_function_name,character varying(200),系統功能名稱
+web_app,item_equipment_ext,10,installation_qty,integer,同一類型數量（單艦裝置數量）
+web_app,item_equipment_ext,11,total_installation_qty,integer,全艦裝置數
+web_app,item_equipment_ext,12,maintenance_level,character varying(10),裝備維修等級代碼
+web_app,item_equipment_ext,13,equipment_serial,character varying(50),裝備序號（裝備識別編號）
+web_app,item_equipment_ext,14,date_created,timestamp without time zone,
+web_app,item_equipment_ext,15,date_updated,timestamp without time zone,
+web_app,item_equipment_ext_equipment_serial_key,1,equipment_serial,character varying(50),
+web_app,item_equipment_ext_pkey,1,item_uuid,uuid,
+web_app,item_item_code_key,1,item_code,character varying(50),
+web_app,item_material_ext,1,item_uuid,uuid,品項UUID
+web_app,item_material_ext,2,item_id_last5,character varying(5),品項識別碼（後五碼）
+web_app,item_material_ext,3,item_name_zh_short,character varying(20),中文品名（9字內）
+web_app,item_material_ext,4,nsn,character varying(20),NSN/國家料號
+web_app,item_material_ext,5,category_code,character varying(10),統一組類別
+web_app,item_material_ext,6,item_code,character varying(10),品名代號
+web_app,item_material_ext,7,fiig,character varying(10),FIIG
+web_app,item_material_ext,8,weapon_system_code,character varying(20),武器系統代號
+web_app,item_material_ext,9,accounting_unit_code,character varying(20),會計編號
+web_app,item_material_ext,10,issue_unit,character varying(10),撥發單位（EA/SET/LOT等）
+web_app,item_material_ext,11,unit_price,"numeric(10,2)",美金單價
+web_app,item_material_ext,12,unit_pack_quantity,integer,單位包裝量
+web_app,item_material_ext,13,weight_kg,"numeric(10,3)",重量（KG）
+web_app,item_material_ext,14,has_stock,boolean,有無料號
+web_app,item_material_ext,15,storage_life_months,character varying(10),存儲壽限代號
+web_app,item_material_ext,16,file_type_code,character varying(10),檔別代號
+web_app,item_material_ext,17,file_type_category,character varying(10),檔別區分
+web_app,item_material_ext,18,secrecy_code,character varying(10),機密性代號（U/C/S等）
+web_app,item_material_ext,19,expendability_code,character varying(10),消耗性代號（M/N等）
+web_app,item_material_ext,20,spec_indicator,character varying(10),規格指示
+web_app,item_material_ext,21,navy_source,character varying(50),海軍軍品來源
+web_app,item_material_ext,22,storage_type_code,character varying(20),儲存型式
+web_app,item_material_ext,23,storage_life_action_code,character varying(10),處理代號（壽限處理）
+web_app,item_material_ext,24,manufacturability_code,character varying(10),製造能量
+web_app,item_material_ext,25,repairability_code,character varying(10),修理能量
+web_app,item_material_ext,26,source_code,character varying(10),來源代號
+web_app,item_material_ext,27,project_code,character varying(20),專案代號
+web_app,item_material_ext,28,date_created,timestamp without time zone,
+web_app,item_material_ext,29,date_updated,timestamp without time zone,
+web_app,item_material_ext,30,inc_code,character varying(20),
+web_app,item_material_ext,31,fiig_code,character varying(20),
+web_app,item_material_ext_nsn_key,1,nsn,character varying(20),
+web_app,item_material_ext_pkey,1,item_uuid,uuid,
+web_app,item_number_xref,1,part_number_id,integer,零件號碼ID
+web_app,item_number_xref,2,part_number_reference,character varying(50),配件號碼（P/N）
+web_app,item_number_xref,3,item_uuid,uuid,品項UUID
+web_app,item_number_xref,4,supplier_id,integer,廠商ID
+web_app,item_number_xref,5,pn_acquisition_level,character varying(10),P/N獲得程度
+web_app,item_number_xref,6,pn_acquisition_source,character varying(50),P/N獲得來源
+web_app,item_number_xref,7,is_primary,boolean,是否為主要零件號
+web_app,item_number_xref,8,date_created,timestamp without time zone,
+web_app,item_number_xref,9,date_updated,timestamp without time zone,
+web_app,item_pkey,1,item_uuid,uuid,
+web_app,mrc,1,mrc_uuid,uuid,MRC UUID（主鍵）
+web_app,mrc,2,item_uuid,uuid,品項UUID
+web_app,mrc,3,spec_no,integer,規格順序
+web_app,mrc,4,spec_abbr,character varying(20),規格資料縮寫
+web_app,mrc,5,spec_en,character varying(200),規格資料英文
+web_app,mrc,6,spec_zh,character varying(200),規格資料翻譯
+web_app,mrc,7,answer_en,character varying(200),英答
+web_app,mrc,8,answer_zh,character varying(200),中答
+web_app,mrc,9,date_created,timestamp without time zone,
+web_app,mrc,10,date_updated,timestamp without time zone,
+web_app,mrc_pkey,1,mrc_uuid,uuid,
+web_app,part_number_xref_part_number_id_seq,1,last_value,bigint,
+web_app,part_number_xref_part_number_id_seq,2,log_cnt,bigint,
+web_app,part_number_xref_part_number_id_seq,3,is_called,boolean,
+web_app,part_number_xref_pkey,1,part_number_id,integer,
+web_app,supplier,1,supplier_id,integer,廠商ID（自動編號）
+web_app,supplier,2,supplier_code,character varying(20),廠商來源代號
+web_app,supplier,3,cage_code,character varying(20),廠家登記代號
+web_app,supplier,4,supplier_name_en,character varying(200),廠家製造商（英文）
+web_app,supplier,5,supplier_name_zh,character varying(100),廠商中文名稱
+web_app,supplier,6,agent_name,character varying(255),代理商名稱。如果是製造商則填 NULL，如果是代理商則填入代理商名稱
+web_app,supplier,7,country_code,character varying(10),國家代碼
+web_app,supplier,8,date_created,timestamp without time zone,
+web_app,supplier,9,date_updated,timestamp without time zone,
+web_app,supplier_cage_code_key,1,cage_code,character varying(20),
+web_app,supplier_pkey,1,supplier_id,integer,
+web_app,supplier_supplier_code_key,1,supplier_code,character varying(20),
+web_app,supplier_supplier_id_seq,1,last_value,bigint,
+web_app,supplier_supplier_id_seq,2,log_cnt,bigint,
+web_app,supplier_supplier_id_seq,3,is_called,boolean,
+web_app,suppliercodeapplication_form_no_key,1,form_no,character varying(50),
+web_app,suppliercodeapplication_pkey,1,application_uuid,uuid,
+web_app,technicaldocument,1,document_id,integer,
+web_app,technicaldocument,2,document_reference,character varying(200),
+web_app,technicaldocument,3,document_version,character varying(20),
+web_app,technicaldocument,4,shipyard_drawing_no,character varying(50),
+web_app,technicaldocument,5,design_drawing_no,character varying(50),
+web_app,technicaldocument,6,document_type,character varying(20),
+web_app,technicaldocument,7,document_category,character varying(20),
+web_app,technicaldocument,8,language,character varying(10),
+web_app,technicaldocument,9,security_level,character varying(10),
+web_app,technicaldocument,10,eswbs_code,character varying(20),
+web_app,technicaldocument,11,accounting_code,character varying(20),
+web_app,technicaldocument,12,date_created,timestamp without time zone,
+web_app,technicaldocument,13,date_updated,timestamp without time zone,
+web_app,technicaldocument_document_id_seq,1,last_value,bigint,
+web_app,technicaldocument_document_id_seq,2,log_cnt,bigint,
+web_app,technicaldocument_document_id_seq,3,is_called,boolean,
+web_app,technicaldocument_pkey,1,document_id,integer,
+web_app,unique_bom_line,1,bom_uuid,uuid,
+web_app,unique_bom_line,2,line_no,character varying(50),
+web_app,unique_part,1,part_number,character varying(50),
+web_app,unique_part,2,item_uuid,uuid,
+web_app,unique_part,3,supplier_id,integer,
+web_app,usersession,1,session_id,character varying(255),Session ID（主鍵）
+web_app,usersession,2,user_id,uuid,
+web_app,usersession,3,ip_address,character varying(45),
+web_app,usersession,4,user_agent,text,
+web_app,usersession,5,is_active,boolean,
+web_app,usersession,6,remember_me,boolean,
+web_app,usersession,7,expires_at,timestamp without time zone,Session過期時間
+web_app,usersession,8,date_created,timestamp without time zone,
+web_app,usersession,9,last_activity_at,timestamp without time zone,
+web_app,usersession_pkey,1,session_id,character varying(255),
