@@ -1,14 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-檔案名稱: auto_migrate_v1_to_v3.py
-用途: 自動化資料遷移工具 (V1.0 → V3.2)
-來源: C:/github/SBIR/Database/export/20251219.sql (舊資料庫 V1.0)
-目標: 新資料庫 sbir_equipment_db_v3 (V3.2) - web_app schema
-版本: V2.0
-建立日期: 2025-12-27
-更新日期: 2025-12-29
-
+Database Migration Script
 功能:
   1. 解析 20251219.sql 中的 INSERT 語句
   2. 根據欄位映射規則自動轉換
@@ -16,16 +9,14 @@
   4. 支援 item 表去重 (多個 application 可共用同一個 item)
 
 主要改進:
-  - V2.0: 新增 item 去重邏輯，避免 UNIQUE constraint 違反
+  - item 去重邏輯，避免 UNIQUE constraint 違反
          原始 126 筆 applications → 42 個不同 items
          多個申編單可以引用同一個品項 (符合業務邏輯)
 
 使用方法:
-  python auto_migrate_v1_to_v3.py
-  
   執行後會在同目錄生成 migrate_v1_to_v3.sql，然後使用以下命令匯入：
   
-  $env:PGPASSWORD='your_password'
+  $env:PGPASSWORD='willlin07'
   & "C:\\Program Files\\PostgreSQL\\16\\bin\\psql.exe" -h localhost -p 5432 `
     -U postgres -d sbir_equipment_db_v3 -f migrate_v1_to_v3.sql
 
@@ -73,8 +64,8 @@ USER_FIELD_MAPPING = {
     'last_login_at': 'last_login_at',
     'failed_login_attempts': 'failed_login_attempts',
     'locked_until': 'locked_until',
-    'created_at': 'date_created',  # 重新命名
-    'updated_at': 'date_updated',  # 重新命名
+    'created_at': 'date_created',
+    'updated_at': 'date_updated',
 }
 
 # Part 3: user_sessions → usersession (9 個欄位)
@@ -86,7 +77,7 @@ SESSION_FIELD_MAPPING = {
     'is_active': 'is_active',
     'remember_me': 'remember_me',
     'expires_at': 'expires_at',
-    'created_at': 'date_created',  # 重新命名
+    'created_at': 'date_created',
     'last_activity_at': 'last_activity_at',
 }
 
@@ -102,8 +93,8 @@ ATTACHMENT_FIELD_MAPPING = {
     'file_type': 'file_type',
     'page_selection': 'page_selection',
     'sort_order': 'sort_order',
-    'created_at': 'date_created',  # 重新命名
-    'updated_at': 'date_updated',  # 重新命名
+    'created_at': 'date_created',
+    'updated_at': 'date_updated',
 }
 
 # Part 2: applications → application (20 個欄位保留)
@@ -284,7 +275,7 @@ def create_insert_statement(table: str, columns: List[str], values: List[str]) -
 
 
 # =====================================================================
-# 轉換函數 - Part 1, 3, 4 (簡單映射)
+# 轉換函數 - Part 1, 3, 4 (映射)
 # =====================================================================
 
 def convert_users(columns: List[str], values: List[str]) -> str:
@@ -352,7 +343,7 @@ def convert_application_attachments(columns: List[str], values: List[str]) -> st
 
 
 # =====================================================================
-# 轉換函數 - Part 2 (複雜拆分)
+# 轉換函數 - Part 2 (application 拆分)
 # =====================================================================
 
 def convert_applications_complex(columns: List[str], values: List[str], item_map: Dict[str, str]) -> Dict[str, List[str]]:
@@ -844,7 +835,7 @@ if __name__ == '__main__':
     # 設定路徑
     script_dir = Path(__file__).parent
     input_file = script_dir.parent.parent.parent / 'export' / '20251219.sql'
-    output_file = script_dir / 'migrate_v1_to_v3.sql'  # 直接生成最終檔名
+    output_file = script_dir / 'migrate_v1_to_v3.sql'
     
     print("="*60)
     print("資料庫遷移工具 V2.0 (V1.0 → V3.2)")
